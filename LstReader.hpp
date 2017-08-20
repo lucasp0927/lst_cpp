@@ -7,6 +7,7 @@
 #include <cmath>
 #include <limits>
 #include <algorithm>
+#include <numeric>
 #include <bitset>
 const unsigned int RESOLUTION = 200;//200 ps
 unsigned int time_patch_dlen(const std::string& time_patch)
@@ -381,7 +382,7 @@ public:
     std::sort(counts_temp.begin(), counts_temp.end(), compare_timedata());
 
     for (unsigned int i = 0; i < bin_num; ++i)
-      output_buffer[i] = 0;
+      output_buffer[i] = 0ULL;
     unsigned long long interval = tend-tstart;
     unsigned long long bin_size = interval/bin_num;
     unsigned int bin_idx = 0;
@@ -439,10 +440,37 @@ public:
     return s;
   }
 
-  void phase_hist(unsigned int const channel, unsigned long long const tstart, unsigned long long const tend ,unsigned int const clock_ch = 3) const
+  unsigned long period_combined_average(std::vector<unsigned long> const& period_count,\
+                                        std::vector<unsigned long> const& periods)const
   {
+    unsigned long total_counts = std::accumulate( period_count.begin(), period_count.end(), 0ULL);
+    unsigned long total_period = std::inner_product(periods.begin(), periods.end(), period_count.begin(), 0ULL);
+    return total_period/total_counts;
+  }
 
+  unsigned long period_combined_variance(std::vector<unsigned long> const& period_count,\
+                                         std::vector<unsigned long> const& periods,\
+                                         std::vector<unsigned long> const& periods_var)const
+  {
+    unsigned long avg_period = period_combined_average(period_count, periods);
+    unsigned long total_counts = std::accumulate( period_count.begin(), period_count.end(), 0ULL);
+    std::vector<unsigned long> temp; //S1^2 - (X1-Xc)^2
+    std::transform(periods_var.begin(), periods_var.end(),
+                   periods.begin(),
+                   std::back_inserter(temp),
+                   [avg_period](unsigned long s, unsigned long x) {return s+(unsigned long)pow((long long)x-(long long)avg_period,2);});
+    return std::inner_product(temp.begin(), temp.end(), period_count.begin(), 0ULL)/total_counts;
+  }
+
+  void phase_hist(unsigned int const channel, unsigned long long const tstart, unsigned long long const tend, unsigned int bin_num, unsigned long* const result ,unsigned int const clock_ch = 3) const
+  {
+    assert(tend > tstart);
+    for (unsigned int i = 0; i < bin_num; ++i)
+        result[i] = 0ULL;
+    std::vector<std::vector<Count>> clock(sw_preset);
+    std::vector<std::vector<Count>> data(sw_preset);
     std::vector<unsigned long> periods(sw_preset);
+    std::vector<unsigned long> period_count(sw_preset);
     std::vector<unsigned long> periods_var(sw_preset);
     for (unsigned int sweep = 1; sweep <= sw_preset; ++sweep)
       {
@@ -451,28 +479,59 @@ public:
         select_sweep(select_sw,counts,sweep);
         std::vector<Count> select_sw_td(select_sw.size());
         select_timedata(select_sw_td,select_sw,tstart,tend);
-
         //get clock_ch
-        std::vector<Count> select_sw_td_clock(select_sw_td.size());
-        select_channel(select_sw_td_clock,select_sw_td, clock_ch);
-        std::cout <<"sweep "<<sweep<<", clock : " \
-                  << select_sw_td_clock.size() << std::endl;
+        clock[sweep-1].resize(select_sw_td.size());
+        select_channel(clock[sweep-1],select_sw_td, clock_ch);
+        period_count[sweep-1] = clock[sweep-1].size()-1;
         //get data_ch
-        std::vector<Count> select_sw_td_data(select_sw_td.size());
-        select_channel(select_sw_td_data,select_sw_td, channel);
-        std::cout <<"sweep "<<sweep<<", channel "<< channel<<" : "\
-                  << select_sw_td_data.size() << std::endl;
+        data[sweep-1].resize(select_sw_td.size());
+        select_channel(data[sweep-1],select_sw_td, channel);
         //calculate average period
-        periods[sweep-1] = calculate_lattice_period(select_sw_td_clock);
-        std::cout <<"average period: " << periods[sweep-1]/1e6 <<"us"<<std::endl;
-        periods_var[sweep-1] = calculate_lattice_period_var(select_sw_td_clock);
-        std::cout <<"average period standard deviation: " << sqrt(periods_var[sweep-1])/1e6 <<"us"<<std::endl;
-
+        periods[sweep-1] = calculate_lattice_period(clock[sweep-1]);
+        periods_var[sweep-1] = calculate_lattice_period_var(clock[sweep-1]);
       }
 
+    unsigned long avg_period = period_combined_average(period_count,periods);
+    unsigned long combined_var = period_combined_variance(period_count, periods, periods_var);
+    std::cout <<"----------------------------------------------"<<std::endl;
+    std::cout << "average period: " << avg_period/1e6 << "us" << std::endl;
+    std::cout << "combined standard deviation: " << sqrt(combined_var)/1e6 << "us" << std::endl;
 
-    // std::cout << "selected contains:";
-    // for (Count& x: selected) std::cout << ' ' << x<<std::endl;
-    // std::cout << '\n';
+    // calculate phase_hist
+    // calculate all delta_t
+
+    std::vector<unsigned long> delta_t;
+    for (unsigned int sw = 0; sw < sw_preset; ++sw)
+      {
+        if (data[sw].size() == 0 || clock[sw].size() <2)
+          break;
+        auto clock_it = clock[sw].begin();
+        while (data[sw][0].get_timedata() > (clock_it+1)->get_timedata() && (clock_it+1)!=clock[sw].end())
+          ++clock_it;
+        for (auto it=data[sw].begin(); it < data[sw].end(); it++)
+          {
+            unsigned long dt = (it->get_timedata()-clock_it->get_timedata());
+            dt = dt*avg_period/((clock_it+1)->get_timedata()-clock_it->get_timedata());
+            delta_t.push_back(dt);
+            while ((it+1)->get_timedata() >= (clock_it+1)->get_timedata())
+              {
+                ++clock_it;
+                if(clock_it == clock[sw].end())
+                  break;
+              }
+          }
+      }
+    unsigned long data_counts = 0;
+    for (unsigned int sw = 0; sw < sw_preset; ++sw)
+      data_counts += data[sw].size();
+    //make histogram
+    unsigned long time_bin = avg_period/bin_num;
+    for (auto it=delta_t.begin(); it < delta_t.end(); it++)
+      {
+        unsigned int hist_bin = (unsigned int)*it/time_bin;
+        assert(hist_bin >=0);
+        assert(hist_bin < bin_num);
+        result[hist_bin]++;
+      }
   }
 };

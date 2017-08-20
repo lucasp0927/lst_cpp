@@ -17,11 +17,13 @@ int main(int argc, char *argv[])
 
   reader.big_time(2, tstart, tend, bin_num, big_time);
   // for (unsigned int i = 0; i < bin_num; ++i)
-  //   {
   //     std::cout << big_time[i] << std::endl;
-  //   }
   delete [] big_time;
   //phase
-  reader.phase_hist(1,20E9,24E9);
+  bin_num = 40;
+  unsigned long* phase_hist = new unsigned long[bin_num];
+  reader.phase_hist(2,18E9,22E9,bin_num, phase_hist);
+  for (unsigned int i = 0; i < bin_num; ++i)
+      std::cout << phase_hist[i] << std::endl;
   return 0;
 }
