@@ -494,13 +494,12 @@ public:
         //calculate average period
         periods[sweep-1] = (unsigned long)calculate_lattice_period(clock[sweep-1]);
         periods_var[sweep-1] = calculate_lattice_period_var(clock[sweep-1]);
-		std::cout << "period: " << periods[sweep - 1] << std::endl;
-		std::cout << "period variance: " << periods_var[sweep - 1] << std::endl;
-      } 
+		// std::cout << "period: " << periods[sweep - 1] << std::endl;
+		// std::cout << "period variance: " << periods_var[sweep - 1] << std::endl;
+      }
 
     unsigned long avg_period = period_combined_average(period_count,periods);
     unsigned long long combined_var = period_combined_variance(period_count, periods, periods_var);
-    std::cout <<"----------------------------------------------"<<std::endl;
     std::cout << "average period: " << avg_period/1e6 << "us" << std::endl;
     std::cout << "combined standard deviation: " << sqrt(combined_var)/1e6 << "us" << std::endl;
 
