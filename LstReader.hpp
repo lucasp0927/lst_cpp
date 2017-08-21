@@ -231,18 +231,18 @@ public:
         GotoLine(file,2);
         getline(file,line);
         assert(line.find("range")==0);
-        int range_l = line.length()-6;
+        auto range_l = line.length()-6;
         range = std::stoi(line.substr(6,range_l));
         //cycles
         GotoLine(file,11);
         getline(file,line);
         assert(line.find("cycles")==0);
-        int cycles_l = line.length()-7;
+        auto cycles_l = line.length()-7;
         cycles = std::stoi(line.substr(7,cycles_l));
       }
     file.close();
-    bin_width = pow(2,bit_shift)*RESOLUTION;
-    timedata_limit = bin_width*range;
+    bin_width = (1UL<<bit_shift)*RESOLUTION;
+    timedata_limit = (unsigned long long)bin_width*(unsigned long long)range;
     prepare();
     read_file();
     iterate_data();
@@ -271,12 +271,12 @@ public:
     file.close();
     std::ifstream fileb (filename, std::ios::in | std::ios::binary);
     fileb.seekg (0, fileb.end);
-    int length = fileb.tellg();
+    auto length = fileb.tellg();
     fileb.seekg(pos);
 
     length = length-pos; //length of data in byte
     assert(length%dlen == 0);
-    total_data_count = length/dlen;
+    total_data_count = (unsigned long)length/dlen;
     assert(buffer == nullptr);
     buffer = new char[length];
     fileb.read(buffer,length);
@@ -292,7 +292,7 @@ public:
     std::cout << "range: "<< range << std::endl;
     std::cout << "cycles: "<< cycles << std::endl;
     std::cout << "bin width: " << bin_width << "ps" << std::endl;
-    std::cout << "timedata limit:" << timedata_limit/(1e9) << "ms" << std::endl;
+    std::cout << "timedata limit:" << timedata_limit/(1E9) << "ms" << std::endl;
     std::cout <<"total data counts: " << total_data_count << std::endl;
     std::cout<<"non-zero count: " << nonzero_data_count << std::endl;
     std::cout << "------------------------------------------" << std::endl;
@@ -329,9 +329,11 @@ public:
         ofile << line<<std::endl;
       }
     file.close();
+	ofile.close();
+	ofile.open(out_filename, std::ios::binary | std::ios::app);
     //write nonzero data
     char* out_buffer = new char[nonzero_data_count*dlen];
-    unsigned long out_idx = 0;
+    unsigned long long out_idx = 0;
     for (unsigned long i=0; i < total_data_count; ++i)
       {
         char test = 0x00;
@@ -366,7 +368,6 @@ public:
         if (test != 0x00)
           {
             Count c(buffer+i*dlen,time_patch);
-            //std::cout << c << std::endl;
             counts.push_back(c);
           }
       }
@@ -433,32 +434,36 @@ public:
   unsigned long long calculate_lattice_period_var(std::vector<Count> const& clock) const
   {
     long long p = calculate_lattice_period(clock);
-    unsigned long long s = 0;
-    for (auto it=clock.begin(); it < --clock.end(); it++)
-      s += pow((long long)(it+1)->get_timedata() - (long long)it->get_timedata() - p,2);
-    s /= clock.size()-1;
+    long long s = 0;
+	long long t = 0;
+	for (auto it = clock.begin(); it < --clock.end(); it++)
+	{
+		t = ((long long)((it + 1)->get_timedata() - it->get_timedata()) - p)*((long long)((it + 1)->get_timedata() - it->get_timedata()) - p);
+		s += t/(clock.size()-1);
+	}
     return s;
   }
 
   unsigned long period_combined_average(std::vector<unsigned long> const& period_count,\
                                         std::vector<unsigned long> const& periods)const
   {
-    unsigned long total_counts = std::accumulate( period_count.begin(), period_count.end(), 0ULL);
-    unsigned long total_period = std::inner_product(periods.begin(), periods.end(), period_count.begin(), 0ULL);
-    return total_period/total_counts;
+    unsigned long total_counts = std::accumulate( period_count.begin(), period_count.end(), 0UL);
+    unsigned long long total_period = std::inner_product(periods.begin(), periods.end(), period_count.begin(), 0ULL);
+    return (unsigned long)(total_period/total_counts);
   }
 
-  unsigned long period_combined_variance(std::vector<unsigned long> const& period_count,\
+  unsigned long long period_combined_variance(std::vector<unsigned long> const& period_count,\
                                          std::vector<unsigned long> const& periods,\
-                                         std::vector<unsigned long> const& periods_var)const
+                                         std::vector<unsigned long long> const& periods_var)const
   {
     unsigned long avg_period = period_combined_average(period_count, periods);
-    unsigned long total_counts = std::accumulate( period_count.begin(), period_count.end(), 0ULL);
-    std::vector<unsigned long> temp; //S1^2 - (X1-Xc)^2
+    unsigned long total_counts = std::accumulate( period_count.begin(), period_count.end(), 0UL);
+    std::vector<unsigned long long> temp; //S1^2 - (X1-Xc)^2
     std::transform(periods_var.begin(), periods_var.end(),
                    periods.begin(),
                    std::back_inserter(temp),
-                   [avg_period](unsigned long s, unsigned long x) {return s+(unsigned long)pow((long long)x-(long long)avg_period,2);});
+                   [avg_period](unsigned long long s, unsigned long x) {return s+\
+		                       (unsigned long long)((long long)x-(long long)avg_period)*((long long)x - (long long)avg_period);});
     return std::inner_product(temp.begin(), temp.end(), period_count.begin(), 0ULL)/total_counts;
   }
 
@@ -471,7 +476,7 @@ public:
     std::vector<std::vector<Count>> data(sw_preset);
     std::vector<unsigned long> periods(sw_preset);
     std::vector<unsigned long> period_count(sw_preset);
-    std::vector<unsigned long> periods_var(sw_preset);
+    std::vector<unsigned long long> periods_var(sw_preset);
     for (unsigned int sweep = 1; sweep <= sw_preset; ++sweep)
       {
         //select sweep and timedata
@@ -482,17 +487,19 @@ public:
         //get clock_ch
         clock[sweep-1].resize(select_sw_td.size());
         select_channel(clock[sweep-1],select_sw_td, clock_ch);
-        period_count[sweep-1] = clock[sweep-1].size()-1;
+        period_count[sweep-1] = (unsigned long) clock[sweep-1].size()-1;
         //get data_ch
         data[sweep-1].resize(select_sw_td.size());
         select_channel(data[sweep-1],select_sw_td, channel);
         //calculate average period
-        periods[sweep-1] = calculate_lattice_period(clock[sweep-1]);
+        periods[sweep-1] = (unsigned long)calculate_lattice_period(clock[sweep-1]);
         periods_var[sweep-1] = calculate_lattice_period_var(clock[sweep-1]);
-      }
+		std::cout << "period: " << periods[sweep - 1] << std::endl;
+		std::cout << "period variance: " << periods_var[sweep - 1] << std::endl;
+      } 
 
     unsigned long avg_period = period_combined_average(period_count,periods);
-    unsigned long combined_var = period_combined_variance(period_count, periods, periods_var);
+    unsigned long long combined_var = period_combined_variance(period_count, periods, periods_var);
     std::cout <<"----------------------------------------------"<<std::endl;
     std::cout << "average period: " << avg_period/1e6 << "us" << std::endl;
     std::cout << "combined standard deviation: " << sqrt(combined_var)/1e6 << "us" << std::endl;
@@ -510,9 +517,9 @@ public:
           ++clock_it;
         for (auto it=data[sw].begin(); it < data[sw].end(); it++)
           {
-            unsigned long dt = (it->get_timedata()-clock_it->get_timedata());
+            unsigned long long dt = (it->get_timedata()-clock_it->get_timedata());
             dt = dt*avg_period/((clock_it+1)->get_timedata()-clock_it->get_timedata());
-            delta_t.push_back(dt);
+            delta_t.push_back((unsigned long)dt);
             while ((it+1)->get_timedata() >= (clock_it+1)->get_timedata())
               {
                 ++clock_it;
@@ -521,9 +528,6 @@ public:
               }
           }
       }
-    unsigned long data_counts = 0;
-    for (unsigned int sw = 0; sw < sw_preset; ++sw)
-      data_counts += data[sw].size();
     //make histogram
     unsigned long time_bin = avg_period/bin_num;
     for (auto it=delta_t.begin(); it < delta_t.end(); it++)
