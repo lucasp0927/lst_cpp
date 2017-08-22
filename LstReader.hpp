@@ -9,6 +9,11 @@
 #include <algorithm>
 #include <numeric>
 #include <bitset>
+
+#ifdef max
+#undef max
+#endif
+
 const unsigned int RESOLUTION = 200;//200 ps
 unsigned int time_patch_dlen(const std::string& time_patch)
 {
@@ -467,7 +472,13 @@ public:
     return std::inner_product(temp.begin(), temp.end(), period_count.begin(), 0ULL)/total_counts;
   }
 
-  void phase_hist(unsigned int const channel, unsigned long long const tstart, unsigned long long const tend, unsigned int bin_num, unsigned long* const result ,unsigned int const clock_ch = 3) const
+  void phase_hist(unsigned int const channel,\
+	              unsigned long long const tstart,\
+	              unsigned long long const tend,\
+	              unsigned int const bin_num,\
+	              unsigned long* const result,\
+	              unsigned int const clock_ch = 3\
+                  ) const
   {
     assert(tend > tstart);
     for (unsigned int i = 0; i < bin_num; ++i)
@@ -505,29 +516,34 @@ public:
 
     // calculate phase_hist
     // calculate all delta_t
-
+    std::cout << "calculate dt" << std::endl;
     std::vector<unsigned long> delta_t;
     for (unsigned int sw = 0; sw < sw_preset; ++sw)
       {
         if (data[sw].size() == 0 || clock[sw].size() <2)
-          break;
+          continue;
         auto clock_it = clock[sw].begin();
         while (data[sw][0].get_timedata() > (clock_it+1)->get_timedata() && (clock_it+1)!=clock[sw].end())
           ++clock_it;
         for (auto it=data[sw].begin(); it < data[sw].end(); it++)
           {
             unsigned long long dt = (it->get_timedata()-clock_it->get_timedata());
-            dt = dt*avg_period/((clock_it+1)->get_timedata()-clock_it->get_timedata());
-            delta_t.push_back((unsigned long)dt);
+			if ((clock_it + 1)->get_timedata() - clock_it->get_timedata() == 0ULL)
+              dt = 0ULL;
+            else
+              dt = dt*avg_period/((clock_it+1)->get_timedata()-clock_it->get_timedata());
+			if (dt < avg_period)
+              delta_t.push_back((unsigned long)dt);
             while ((it+1)->get_timedata() >= (clock_it+1)->get_timedata())
               {
-                ++clock_it;
                 if(clock_it == clock[sw].end())
                   break;
+                ++clock_it;
               }
           }
       }
     //make histogram
+    std::cout <<"hist" << std::endl;
     unsigned long time_bin = avg_period/bin_num;
     for (auto it=delta_t.begin(); it < delta_t.end(); it++)
       {

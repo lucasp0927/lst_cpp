@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
   std::ofstream ofile;
   //big_time
   ofile.open("big_time.txt");
-  reader.big_time(2, tstart, tend, bin_num, big_time);
+  reader.big_time(1, tstart, tend, bin_num, big_time);
   for (unsigned int i = 0; i < bin_num; ++i)
        ofile << big_time[i] << std::endl;
   ofile.close();
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
   tend = (unsigned long long) 22e9;
   ofile.open("phase_hist.txt");
   unsigned long* phase_hist = new unsigned long[bin_num];
-  reader.phase_hist(2,tstart,tend,bin_num, phase_hist);
+  reader.phase_hist(1,tstart,tend,bin_num, phase_hist);
   for (unsigned int i = 0; i < bin_num; ++i)
       ofile << phase_hist[i] << std::endl;
   ofile.close();
