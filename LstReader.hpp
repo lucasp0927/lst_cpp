@@ -8,7 +8,6 @@
 #include <limits>
 #include <algorithm>
 #include <numeric>
-#include <bitset>
 
 #ifdef max
 #undef max
@@ -173,7 +172,6 @@ public:
   virtual ~Count()=default;
 };
 
-//const unsigned int BUFFER_SIZE = 4800000;
 std::ifstream& GotoLine(std::ifstream& file, unsigned int num){
   file.seekg(std::ios::beg);
   for(unsigned int i=0; i < num - 1; ++i){
@@ -363,6 +361,8 @@ public:
 
   void decode_counts()
   {
+    counts.clear();
+    std::vector<Count> temp;
     for (unsigned long i=0; i < total_data_count; ++i)
       {
         char test = 0x00;
@@ -373,8 +373,33 @@ public:
         if (test != 0x00)
           {
             Count c(buffer+i*dlen,time_patch);
-            counts.push_back(c);
+            temp.push_back(c);
           }
+      }
+    //remove out of range data
+    std::vector<Count> select_sw(temp.size());
+    select_sweep(select_sw, temp, 1, sw_preset);
+    std::vector<Count> select_sw_ch(select_sw.size());
+    select_channel(select_sw_ch, select_sw, 1, 6);
+    counts.resize(select_sw_ch.size());
+    select_timedata(counts, select_sw_ch, 0ULL, timedata_limit);
+  }
+
+  void print_stat()
+  {
+    for (unsigned int ch = 1; ch <= 6; ++ch)
+      {
+        std::vector<Count> select_ch(counts.size());
+        select_channel(select_ch,counts,ch);
+        std::cout << "Total counts in channel " << ch << ": " << select_ch.size() << std::endl;
+        for (unsigned int sw = 1; sw <= sw_preset; ++sw)
+          {
+            std::vector<Count> select_sw(select_ch.size());
+            select_sweep(select_sw,select_ch,sw);
+            std::cout << "   channel: " << ch << ", sweep: "<< sw <<", counts: " << select_sw.size() << std::endl;
+            select_sw.clear();
+          }
+        select_ch.clear();
       }
   }
 
@@ -384,7 +409,8 @@ public:
                 unsigned int const bin_num,\
                 unsigned long* const output_buffer) const
   {
-    auto counts_temp = counts;
+    std::vector<Count> counts_temp(counts.size());
+    select_channel(counts_temp, counts, channel);
     std::sort(counts_temp.begin(), counts_temp.end(), compare_timedata());
 
     for (unsigned int i = 0; i < bin_num; ++i)
@@ -415,11 +441,24 @@ public:
     result.resize(std::distance(result.begin(),it));
   }
 
+  void select_sweep(std::vector<Count>& result, std::vector<Count> const& input, unsigned int const sweep_start, unsigned int const sweep_end) const
+  {
+    auto it = std::copy_if (input.begin(), input.end(), result.begin(), [sweep_start, sweep_end](Count c){return c.get_sweep() >= sweep_start && c.get_sweep() <= sweep_end;} );
+    result.resize(std::distance(result.begin(),it));
+  }
+
   void select_channel(std::vector<Count>& result, std::vector<Count> const& input, unsigned int const channel) const
   {
     auto it = std::copy_if (input.begin(), input.end(), result.begin(), [channel](Count c){return c.get_channel()==channel;} );
     result.resize(std::distance(result.begin(),it));
   }
+
+  void select_channel(std::vector<Count>& result, std::vector<Count> const& input, unsigned int const channel_start, unsigned int const channel_end) const
+  {
+    auto it = std::copy_if (input.begin(), input.end(), result.begin(), [channel_start, channel_end](Count c){return c.get_channel() >= channel_start && c.get_channel() <= channel_end;} );
+    result.resize(std::distance(result.begin(),it));
+  }
+
 
   void select_timedata(std::vector<Count>& result, std::vector<Count> const& input, unsigned long long const tstart, unsigned long long const tend) const
   {
