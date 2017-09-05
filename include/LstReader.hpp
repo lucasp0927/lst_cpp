@@ -1,6 +1,6 @@
 #ifndef LSTREADER_HPP
 #define LSTREADER_HPP
-
+#include "Count.hpp"
 #include <fstream>
 #include <iostream>
 #include <iomanip>
@@ -16,175 +16,17 @@
 #undef max
 #endif
 
-const unsigned int RESOLUTION = 200;//200 ps
 unsigned int time_patch_dlen(const std::string& time_patch);
-// {
-//   unsigned int dlen = 0;
-//   if (time_patch.compare("0")==0)
-//     dlen = 2;
-//   else if (time_patch.compare("5")==0)
-//     dlen = 4;
-//   else if (time_patch.compare("5b")==0)
-//     dlen = 8;
-//   else if (time_patch.compare("1")==0)
-//     dlen = 4;
-//   else if (time_patch.compare("1a")==0)
-//     dlen = 6;
-//   else if (time_patch.compare("32")==0)
-//     dlen = 6;
-//   else if (time_patch.compare("2")==0)
-//     dlen = 6;
-//   else if (time_patch.compare("f3")==0)
-//     dlen = 8;
-//   else
-//     std::cout << "wrong time_patch." << std::endl;
-//   return dlen;
-// }
-
-class Count
-{
-private:
-  unsigned int edge;
-  unsigned int channel;
-  unsigned long long timedata;
-  unsigned int sweep;
-  friend std::ostream& operator<<(std::ostream &strm, const Count &c)
-  {
-    return strm << std::setw(7) << c.edge \
-                << std::setw(7) << c.channel\
-                << std::setw(20) << c.timedata\
-                << std::setw(7) << c.sweep;
-  }
-public:
-  unsigned int get_channel() const {return channel;}
-  unsigned int get_edge() const {return edge;}
-  unsigned long long get_timedata() const {return timedata;}
-  unsigned int get_sweep() const {return sweep;}
-  Count(){};
-  Count(char* data, const std::string& time_patch)
-  {
-    // unsigned int dlen = time_patch_dlen(time_patch);
-    // for (unsigned int i = 0; i < dlen; ++i)
-    //   {
-    //     std::bitset<8> x(*(data+i));
-    //     std::cout << std::setw(9) << x;
-    //   }
-    // std::cout<<std::endl;
-    channel = (unsigned char)*data&0x07;
-    edge = (unsigned char)(*data&0x08)>>3;
-    sweep = 0;
-    timedata = 0;
-    if (time_patch.compare("f3")==0){
-      sweep = (unsigned char)(*(data+5))&0x7F;
-      timedata = 0ULL;
-      timedata |= (unsigned char) *(data+4);
-      timedata <<= 8;
-      timedata |= (unsigned char) *(data+3);
-      timedata <<= 8;
-      timedata |= (unsigned char) *(data+2);
-      timedata <<= 8;
-      timedata |= (unsigned char) *(data+1);
-      timedata <<= 4;
-      timedata |= (unsigned char)(*(data)&0xF0)>>4;
-      timedata *= RESOLUTION;
-    }else if (time_patch.compare("1a")==0){
-      sweep = 0;
-      sweep |= (unsigned char) *(data+5);
-      sweep <<= 8;
-      sweep |= (unsigned char) *(data+4);
-      timedata = 0ULL;
-      timedata |= (unsigned char) *(data+3);
-      timedata <<= 8;
-      timedata |= (unsigned char) *(data+2);
-      timedata <<= 8;
-      timedata |= (unsigned char) *(data+1);
-      timedata <<= 4;
-      timedata |= (unsigned char)(*(data)&0xF0)>>4;
-      timedata *= RESOLUTION;
-    }else if (time_patch.compare("0")==0){
-      sweep = 0;
-      timedata = 0ULL;
-      timedata |= (unsigned char) *(data+1);
-      timedata <<= 4;
-      timedata |= (unsigned char)(*(data)&0xF0)>>4;
-      timedata *= RESOLUTION;
-    }else if (time_patch.compare("5")==0){
-      sweep = (unsigned char)(*(data+3));
-      timedata = 0ULL;
-      timedata |= (unsigned char) *(data+2);
-      timedata <<= 8;
-      timedata |= (unsigned char) *(data+1);
-      timedata <<= 4;
-      timedata |= (unsigned char)(*(data)&0xF0)>>4;
-      timedata *= RESOLUTION;
-    }else if (time_patch.compare("5b")==0){
-      sweep = 0;
-      sweep |= (unsigned char) *(data+5);
-      sweep <<= 8;
-      sweep |= (unsigned char) *(data+4);
-      timedata = 0ULL;
-      timedata |= (unsigned char) *(data+3);
-      timedata <<= 8;
-      timedata |= (unsigned char) *(data+2);
-      timedata <<= 8;
-      timedata |= (unsigned char) *(data+1);
-      timedata <<= 4;
-      timedata |= (unsigned char)(*(data)&0xF0)>>4;
-      timedata *= RESOLUTION;
-    }else if (time_patch.compare("1")==0){
-      sweep = 0;
-      timedata = 0ULL;
-      timedata |= (unsigned char) *(data+3);
-      timedata <<= 8;
-      timedata |= (unsigned char) *(data+2);
-      timedata <<= 8;
-      timedata |= (unsigned char) *(data+1);
-      timedata <<= 4;
-      timedata |= (unsigned char)(*(data)&0xF0)>>4;
-      timedata *= RESOLUTION;
-    }else if (time_patch.compare("2")==0){
-      sweep = 0;
-      timedata = 0ULL;
-      timedata |= (unsigned char) *(data+5);
-      timedata <<= 8;
-      timedata |= (unsigned char) *(data+4);
-      timedata <<= 8;
-      timedata |= (unsigned char) *(data+3);
-      timedata <<= 8;
-      timedata |= (unsigned char) *(data+2);
-      timedata <<= 8;
-      timedata |= (unsigned char) *(data+1);
-      timedata <<= 4;
-      timedata |= (unsigned char)(*(data)&0xF0)>>4;
-      timedata *= RESOLUTION;
-    }else if (time_patch.compare("32")==0){
-      sweep = (unsigned char)(*(data+5))&0x7F;
-      timedata = 0ULL;
-      timedata |= (unsigned char) *(data+4);
-      timedata <<= 8;
-      timedata |= (unsigned char) *(data+3);
-      timedata <<= 8;
-      timedata |= (unsigned char) *(data+2);
-      timedata <<= 8;
-      timedata |= (unsigned char) *(data+1);
-      timedata <<= 4;
-      timedata |= (unsigned char)(*(data)&0xF0)>>4;
-      timedata *= RESOLUTION;
-    }
-  }
-  virtual ~Count()=default;
-};
 
 std::ifstream& GotoLine(std::ifstream& file, unsigned int num);
 
-struct compare_timedata
+struct compare_timedata //use in bigtime
 {
     inline bool operator() (const Count& c1, const Count& c2)
     {
       return (c1.get_timedata() < c2.get_timedata());
     }
 };
-
 
 class LstReader
 {
