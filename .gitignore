@@ -1,3 +1,6 @@
 *.mat
 *.lst
 *.txt
+build/read_lst
+.DS_Store
+src/obj/*.o

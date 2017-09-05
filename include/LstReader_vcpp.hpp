@@ -516,6 +516,7 @@ public:
 	              unsigned long long const tend,\
 	              unsigned int const bin_num,\
 	              unsigned long* const result,\
+	              double* const lattice_stat,\
 	              unsigned int const clock_ch = 3\
                   ) const
   {
@@ -544,18 +545,17 @@ public:
         //calculate average period
         periods[sweep-1] = (unsigned long)calculate_lattice_period(clock[sweep-1]);
         periods_var[sweep-1] = calculate_lattice_period_var(clock[sweep-1]);
-		// std::cout << "period: " << periods[sweep - 1] << std::endl;
-		// std::cout << "period variance: " << periods_var[sweep - 1] << std::endl;
       }
 
     unsigned long avg_period = period_combined_average(period_count,periods);
     unsigned long long combined_var = period_combined_variance(period_count, periods, periods_var);
     std::cout << "average period: " << avg_period/1e6 << "us" << std::endl;
     std::cout << "combined standard deviation: " << sqrt(combined_var)/1e6 << "us" << std::endl;
-
+	lattice_stat[0] = ((double)avg_period) / 1e6;
+	lattice_stat[1] = (sqrt((double)combined_var) / 1e6);
     // calculate phase_hist
     // calculate all delta_t
-    std::cout << "calculate dt" << std::endl;
+
     std::vector<unsigned long> delta_t;
     for (unsigned int sw = 0; sw < sw_preset; ++sw)
       {
@@ -582,13 +582,14 @@ public:
           }
       }
     //make histogram
-    std::cout <<"hist" << std::endl;
     unsigned long time_bin = avg_period/bin_num;
     for (auto it=delta_t.begin(); it < delta_t.end(); it++)
       {
         unsigned int hist_bin = (unsigned int)*it/time_bin;
         assert(hist_bin >=0);
         assert(hist_bin < bin_num);
+        if (hist_bin >= bin_num)
+          hist_bin = bin_num-1;
         result[hist_bin]++;
       }
   }

@@ -15,8 +15,8 @@ int main(int argc, char *argv[])
   std:: cout << "number of files: " << file_num << std::endl;
 
   unsigned int bin_num = 70;
-  unsigned long long tstart = (unsigned long long)2e9;
-  unsigned long long tend = (unsigned long long)72e9;
+  // unsigned long long tstart = (unsigned long long)2e9;
+  // unsigned long long tend = (unsigned long long)72e9;
 
   typedef boost::multi_array<unsigned long, 2> array_type;
   typedef array_type::index index;
@@ -27,25 +27,25 @@ int main(int argc, char *argv[])
     std::cout << filename << std::endl;
     LstReader reader(filename);
     reader.decode_counts();
-    reader.print_stat();
-    unsigned long* big_time = new unsigned long[bin_num];
-    reader.big_time(2, tstart, tend, bin_num, big_time);
-    for (index b=0; b < bin_num; b++)
-      big_time_result[b][f] = big_time[b];
-    delete [] big_time;
+    // reader.print_stat();
+    // unsigned long* big_time = new unsigned long[bin_num];
+    // reader.big_time(2, tstart, tend, bin_num, big_time);
+    // for (index b=0; b < bin_num; b++)
+    //   big_time_result[b][f] = big_time[b];
+    // delete [] big_time;
   }
   //output
-  std::ofstream ofile;
-  ofile.open("big_time.txt");
-  for (index f = 0; f < file_num; ++f)
-    {
-      for (index i = 0; i < bin_num; ++i)
-        {
-          ofile << std::setw(6) <<  big_time_result[i][f];
-        }
-      ofile<<std::endl;
-    }
-  ofile.close();
+  // std::ofstream ofile;
+  // ofile.open("big_time.txt");
+  // for (index f = 0; f < file_num; ++f)
+  //   {
+  //     for (index i = 0; i < bin_num; ++i)
+  //       {
+  //         ofile << std::setw(6) <<  big_time_result[i][f];
+  //       }
+  //     ofile<<std::endl;
+  //   }
+  // ofile.close();
 
   // LstReader reader(filename);
   // reader.decode_counts();
