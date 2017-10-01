@@ -12,7 +12,7 @@ LIBS= -lm
 _DEPS = LstReader.hpp Count.hpp
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = read_lst.o LstReader.o Count.o
+_OBJ = read_lst.o LstReader.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: %.cpp $(DEPS)

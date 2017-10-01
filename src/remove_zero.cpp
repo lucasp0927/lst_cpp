@@ -12,5 +12,4 @@ int main(int argc, char *argv[])
   LstReader reader(in_filename);
   reader.save_non_zero_counts(out_filename);
   return 0;
-
 }
