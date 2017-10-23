@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     std::cout << filename << std::endl;
     LstReader reader(filename);
     reader.decode_counts();
-    reader.save_counts_to_h5(h5_filename,"data",false);
+    reader.save_counts_to_h5(h5_filename,"events",false);
     // reader.print_stat();
     // unsigned long* big_time = new unsigned long[bin_num];
     // reader.big_time(2, tstart, tend, bin_num, big_time);
