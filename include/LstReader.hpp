@@ -40,7 +40,7 @@ private:
   unsigned int dlen;
   unsigned long bin_width;
   unsigned long long timedata_limit;
-  unsigned long total_data_count;
+  unsigned long long total_data_count;
   unsigned long nonzero_data_count;
   char* buffer;
   std::vector<Count> counts;
@@ -114,12 +114,12 @@ public:
     file.close();
     std::ifstream fileb (filename, std::ios::in | std::ios::binary);
     fileb.seekg (0, fileb.end);
-    auto length = fileb.tellg();
+    unsigned long long length = (unsigned long long) fileb.tellg();
     fileb.seekg(pos);
 
     length = length-pos; //length of data in byte
     assert(length%dlen == 0);
-    total_data_count = (unsigned long)length/dlen;
+    total_data_count = (unsigned long long)length/dlen;
     assert(buffer == nullptr);
     buffer = new char[length];
     fileb.read(buffer,length);
@@ -144,10 +144,10 @@ public:
   void iterate_data()
   {
     nonzero_data_count = 0;
-    for (unsigned long i=0; i < total_data_count; ++i)
+    for (unsigned long long i=0; i < total_data_count; ++i)
       {
         char test = 0x00;
-        for (unsigned long j = i*dlen; j < (i+1)*dlen; ++j)
+        for (unsigned long long j = i*dlen; j < (i+1)*dlen; ++j)
           {
             test |= buffer[j];
           }
@@ -177,10 +177,10 @@ public:
     //write nonzero data
     char* out_buffer = new char[nonzero_data_count*dlen];
     unsigned long long out_idx = 0;
-    for (unsigned long i=0; i < total_data_count; ++i)
+    for (unsigned long long i=0; i < total_data_count; ++i)
       {
         char test = 0x00;
-        for (unsigned long j = i*dlen; j < (i+1)*dlen; ++j)
+        for (unsigned long long j = i*dlen; j < (i+1)*dlen; ++j)
           {
             test |= buffer[j];
           }
@@ -203,10 +203,10 @@ public:
   {
     counts.clear();
     std::vector<Count> temp;
-    for (unsigned long i=0; i < total_data_count; ++i)
+    for (unsigned long long i=0; i < total_data_count; ++i)
       {
         char test = 0x00;
-        for (unsigned long j = i*dlen; j < (i+1)*dlen; ++j)
+        for (unsigned long long j = i*dlen; j < (i+1)*dlen; ++j)
           {
             test |= buffer[j];
           }
@@ -407,7 +407,7 @@ public:
     for (unsigned int sw = 0; sw < sw_preset; ++sw)
       {
         if (data[sw].size() == 0 || clock[sw].size() <2)
-          continue;
+          continue; //TODO continue or break?
         auto clock_it = clock[sw].begin();
         while (data[sw][0].get_timedata() > (clock_it+1)->get_timedata() && (clock_it+1)!=clock[sw].end())
           ++clock_it;
