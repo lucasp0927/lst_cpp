@@ -24,9 +24,11 @@ int main(int argc, char *argv[])
 
   for (index f = 0; f < file_num; f++){
     std::string filename = filename_prefix+std::to_string(f+1)+"_nozero.lst";
+    std::string h5_filename = filename_prefix+std::to_string(f+1)+"_nozero.h5";
     std::cout << filename << std::endl;
     LstReader reader(filename);
     reader.decode_counts();
+    reader.save_counts_to_h5(h5_filename,"data",false);
     // reader.print_stat();
     // unsigned long* big_time = new unsigned long[bin_num];
     // reader.big_time(2, tstart, tend, bin_num, big_time);

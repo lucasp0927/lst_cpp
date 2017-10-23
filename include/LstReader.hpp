@@ -230,7 +230,23 @@ public:
     select_timedata(counts, select_sw_ch, 0ULL, timedata_limit);
   }
 
-  void save_counts_to_h5(boost::multi_array<unsigned long long,2> const* const data,\
+
+  void save_counts_to_h5(std::string const filename, std::string const datasetname, bool const append)
+  {
+    //typedef boost::multi_array<unsigned long long, 2> array_type;
+    //typedef array_type::index index;
+    std::cout << "counts size: " << counts.size() << std::endl;
+    boost::multi_array<unsigned long long, 2> counts_arr(boost::extents[3][counts.size()]);
+    for (unsigned int i = 0; i < counts.size(); ++i)
+      {
+        counts_arr[0][i] = (unsigned long long) (counts[i].get_sweep());
+        counts_arr[1][i] = (unsigned long long) (counts[i].get_channel());
+        counts_arr[2][i] = counts[i].get_timedata();
+      }
+    save_marray_ull_to_h5(&counts_arr, filename, datasetname, append);
+  }
+
+  void save_marray_ull_to_h5(boost::multi_array<unsigned long long,2> const* const data,\
                          std::string const filename,\
                          std::string const datasetname,\
                          bool const append)
@@ -238,7 +254,7 @@ public:
     const H5std_string FILE_NAME(filename);
     const H5std_string DATASET_NAME(datasetname);
     try{
-      std::cout << "iting file: " << filename << std::endl;
+      std::cout << "writing file: " << filename << std::endl;
       std::cout << "        dataset: /" << datasetname << std::endl;
       Exception::dontPrint();
       int const rank = data->num_dimensions();

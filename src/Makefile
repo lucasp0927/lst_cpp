@@ -2,19 +2,21 @@ IDIR =../include
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
 	CC=g++
+	CFLAGS= -std=c++11 -O3 -I$(IDIR) -I/usr/include -Wall
 endif
 ifeq ($(UNAME_S),Darwin)
-	CC=g++-7
+	CC=h5c++
+	CFLAGS= -std=c++11 -O3 -I$(IDIR) -I/usr/include -I/usr/local/include -Wall
 endif
 
 #CFLAGS= -std=c++11 -O3 -DNDEBUG -I$(IDIR) -I/usr/include -Wall
-CFLAGS= -std=c++11 -O3 -I$(IDIR) -I/usr/include -Wall
+
 
 ODIR=obj
 LDIR =../lib
 BDIR = ../build
 
-LIBS= -lm
+LIBS= -lhdf5 -lhdf5_cpp -lm
 
 _DEPS = LstReader.hpp Count.hpp
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
