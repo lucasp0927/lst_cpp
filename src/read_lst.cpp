@@ -29,50 +29,6 @@ int main(int argc, char *argv[])
     LstReader reader(filename);
     reader.decode_counts();
     reader.save_counts_to_h5(h5_filename,"events",false);
-    // reader.print_stat();
-    // unsigned long* big_time = new unsigned long[bin_num];
-    // reader.big_time(2, tstart, tend, bin_num, big_time);
-    // for (index b=0; b < bin_num; b++)
-    //   big_time_result[b][f] = big_time[b];
-    // delete [] big_time;
   }
-  //output
-  // std::ofstream ofile;
-  // ofile.open("big_time.txt");
-  // for (index f = 0; f < file_num; ++f)
-  //   {
-  //     for (index i = 0; i < bin_num; ++i)
-  //       {
-  //         ofile << std::setw(6) <<  big_time_result[i][f];
-  //       }
-  //     ofile<<std::endl;
-  //   }
-  // ofile.close();
-
-  // LstReader reader(filename);
-  // reader.decode_counts();
-  //big time
-  // unsigned int bin_num = 50;
-  // unsigned long long tstart = (unsigned long long)2e9;
-  // unsigned long long tend = (unsigned long long)40e9;
-  // unsigned long* big_time = new unsigned long[bin_num];
-  // std::ofstream ofile;
-  // //big_time
-  // ofile.open("big_time.txt");
-  // reader.big_time(1, tstart, tend, bin_num, big_time);
-  // for (unsigned int i = 0; i < bin_num; ++i)
-  //      ofile << big_time[i] << std::endl;
-  // ofile.close();
-  // delete [] big_time;
-  //phase
-  // bin_num = 40;
-  // tstart = (unsigned long long) 18e9;
-  // tend = (unsigned long long) 22e9;
-  // ofile.open("phase_hist.txt");
-  // unsigned long* phase_hist = new unsigned long[bin_num];
-  // reader.phase_hist(1,tstart,tend,bin_num, phase_hist);
-  // for (unsigned int i = 0; i < bin_num; ++i)
-  //     ofile << phase_hist[i] << std::endl;
-  // ofile.close();
   return 0;
 }
