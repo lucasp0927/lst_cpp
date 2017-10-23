@@ -1,5 +1,12 @@
 IDIR =../include
-CC=g++
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+	CC=g++
+endif
+ifeq ($(UNAME_S),Darwin)
+	CC=g++-7
+endif
+
 #CFLAGS= -std=c++11 -O3 -DNDEBUG -I$(IDIR) -I/usr/include -Wall
 CFLAGS= -std=c++11 -O3 -I$(IDIR) -I/usr/include -Wall
 
