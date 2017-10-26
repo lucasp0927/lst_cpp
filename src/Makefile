@@ -3,20 +3,20 @@ UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
 	CC=g++
 	CFLAGS= -std=c++11 -O3 -I$(IDIR) -I/usr/include -Wall
+	LIBS=  -lhdf5 -lhdf5_cpp -lm
 endif
 ifeq ($(UNAME_S),Darwin)
 	CC=h5c++
-	CFLAGS= -std=c++11 -O3 -I$(IDIR) -I/usr/include -I/usr/local/include -Wall
+	CFLAGS= -std=c++11 -O3 -I$(IDIR) -I/usr/local/opt/szip/include -I/usr/include -I/usr/local/include -Wall
+	LIBS=  -lhdf5 -lhdf5_cpp -lm
 endif
 
 #CFLAGS= -std=c++11 -O3 -DNDEBUG -I$(IDIR) -I/usr/include -Wall
-
-
 ODIR=obj
 LDIR =../lib
 BDIR = ../build
 
-LIBS= -lhdf5 -lhdf5_cpp -lm
+
 
 _DEPS = LstReader.hpp Count.hpp
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
