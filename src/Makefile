@@ -21,7 +21,7 @@ BDIR = ../build
 _DEPS = LstReader.hpp Count.hpp
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = read_lst.o LstReader.o
+_OBJ = read_lst.o LstReader.o Count.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: %.cpp $(DEPS)
