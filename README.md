@@ -6,6 +6,6 @@
 4. make
 
 # Usage
-## example
+## Example
 cd ./build
 python3 convert_h5.py "/Users/lucaspeng/research/apd_data/2017-11-08/*.lst"
