@@ -6,8 +6,8 @@ ifeq ($(UNAME_S),Linux)
 	LIBS=  -lhdf5 -lhdf5_cpp -lm
 endif
 ifeq ($(UNAME_S),Darwin)
-	CC=h5c++
-	CFLAGS= -std=c++11 -O3 -I$(IDIR) -I/usr/local/opt/szip/include -I/usr/include -I/usr/local/include -Wall
+	CC=g++
+	CFLAGS= -std=c++11 -O3 -I$(IDIR) -I/usr/include -Wall
 	LIBS=  -lhdf5 -lhdf5_cpp -lm
 endif
 
