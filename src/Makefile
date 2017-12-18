@@ -19,13 +19,19 @@ BDIR = ../build
 _DEPS = LstReader.hpp Count.hpp
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = read_lst.o LstReader.o Count.o
-OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
+_READ_LST_OBJ = read_lst.o LstReader.o Count.o
+READ_LST_OBJ = $(patsubst %,$(ODIR)/%,$(_READ_LST_OBJ))
+
+_PRINT_HEADER_OBJ = print_header.o LstReader.o Count.o
+PRINT_HEADER_OBJ = $(patsubst %,$(ODIR)/%,$(_PRINT_HEADER_OBJ))
 
 $(ODIR)/%.o: %.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-read_lst: $(OBJ)
+read_lst: $(READ_LST_OBJ)
+	$(CC) -o $(BDIR)/$@ $^ $(CFLAGS) $(LIBS)
+
+print_header: $(PRINT_HEADER_OBJ)
 	$(CC) -o $(BDIR)/$@ $^ $(CFLAGS) $(LIBS)
 
 .PHONY: clean
