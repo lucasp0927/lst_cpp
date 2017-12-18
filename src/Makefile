@@ -16,8 +16,6 @@ ODIR=obj
 LDIR =../lib
 BDIR = ../build
 
-
-
 _DEPS = LstReader.hpp Count.hpp
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
