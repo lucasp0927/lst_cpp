@@ -123,3 +123,19 @@ void save_marray_ull_to_h5(boost::multi_array<unsigned long long,2> const* const
       exit(EXIT_FAILURE);
     }
 }
+
+void read_yaml_config(std::string const filename, CONFIG& config)
+{
+  std::cout << "Parse configure YAML file: "<<filename << std::endl;
+  YAML::Node yaml_config = YAML::LoadFile(filename);
+  //TODO: check config file format
+  config.caption = yaml_config["caption"].as<std::string>();
+  config.bigtime.normalize = yaml_config["bigtime"]["normalize"].as<bool>();
+  config.bigtime.normalize_tstart = yaml_config["bigtime"]["normalize_start"].as<unsigned long long>()*1e9;
+  config.bigtime.normalize_tend = yaml_config["bigtime"]["normalize_end"].as<unsigned long long>()*1e9;
+  config.bigtime.bin_num = yaml_config["bigtime"]["bin_num"].as<int>();
+  config.bigtime.tstart = yaml_config["bigtime"]["start"].as<unsigned long long>()*1e9;
+  config.bigtime.tend = yaml_config["bigtime"]["end"].as<unsigned long long>()*1e9;
+  for(auto it = yaml_config["bigtime"]["channels"].begin();it!=yaml_config["bigtime"]["channels"].end();it++)
+      config.bigtime.channels.push_back(it->as<int>());
+}

@@ -3,12 +3,12 @@ UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
 	CC=g++
 	CFLAGS= -std=c++11 -O3 -I$(IDIR) -I/usr/include -Wall
-	LIBS=  -lhdf5 -lhdf5_cpp -lm -lboost_program_options
+	LIBS=  -lhdf5 -lhdf5_cpp -lm -lboost_program_options -lyaml-cpp
 endif
 ifeq ($(UNAME_S),Darwin)
 	CC=g++
 	CFLAGS= -std=c++11 -O3 -I$(IDIR) -I/usr/include -Wall
-	LIBS=  -lhdf5 -lhdf5_cpp -lm -lboost_program_options
+	LIBS=  -lhdf5 -lhdf5_cpp -lm -lboost_program_options -lyaml-cpp
 endif
 
 #CFLAGS= -std=c++11 -O3 -DNDEBUG -I$(IDIR) -I/usr/include -Wall

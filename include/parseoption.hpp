@@ -30,7 +30,7 @@ po::variables_map parse_option(int const argc, char* const argv[])
     ("inputfile,I", po::value<std::string>(),"Input .lst file") //require single
     ("outputfile,O", po::value<std::string>(),"Output .h5 file")//require single
     ("prefix,P", po::value<std::string>(), "batch process prefix")
-    ("config,C","config file for bigtime, phase ans pulse")
+    ("config,C", po::value<std::string>(), "config file for bigtime, phase ans pulse")
     ("convert","convert to h5 files") //require prefix
     /*("removezero","remove zeros") //require prefix*/
     ("bigtime","output bigtime result") //both, require config
@@ -42,7 +42,7 @@ po::variables_map parse_option(int const argc, char* const argv[])
   conflicting_options(vm, "single", "prefix");
   option_dependency(vm, "inputfile", "single");
   option_dependency(vm, "outputfile", "single");
-  //option_dependency(vm, "bigtime", "config");
+  option_dependency(vm, "bigtime", "config");
   option_dependency(vm, "phase", "config");
   option_dependency(vm, "pulse", "config");
   return vm;
