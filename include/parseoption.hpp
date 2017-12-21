@@ -42,7 +42,7 @@ po::variables_map parse_option(int const argc, char* const argv[])
   conflicting_options(vm, "single", "prefix");
   option_dependency(vm, "inputfile", "single");
   option_dependency(vm, "outputfile", "single");
-  option_dependency(vm, "bigtime", "config");
+  //option_dependency(vm, "bigtime", "config");
   option_dependency(vm, "phase", "config");
   option_dependency(vm, "pulse", "config");
   return vm;

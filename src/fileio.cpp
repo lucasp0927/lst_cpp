@@ -47,6 +47,9 @@ bool check_files_format(std::string const pattern, FILES* const lst_files)
         if (std::find(files.begin(), files.end(), filepath+filename_test) == files.end())
           throw std::runtime_error(filename_test+" missing.");
       }
+    //reorder
+    for (int i = 1; i <= file_num; i++)
+        files[i-1] = filepath+std::to_string(prefix)+"_lst-"+std::to_string(i)+"_nozero.lst";
     lst_files->prefix = prefix;
     lst_files->file_num = file_num;
     lst_files->files = files;
@@ -57,4 +60,66 @@ bool check_files_format(std::string const pattern, FILES* const lst_files)
     return false;
   }
   return true;
+}
+
+void save_marray_ull_to_h5(boost::multi_array<unsigned long long,2> const* const data, \
+                         std::string const filename,\
+                         std::string const datasetname,\
+                         bool const append)
+{
+  const H5std_string FILE_NAME(filename);
+  const H5std_string DATASET_NAME(datasetname);
+  try{
+    std::cout << "writing file: " << filename << std::endl;
+    std::cout << "        dataset: /" << datasetname << std::endl;
+    Exception::dontPrint();
+    int const rank = data->num_dimensions();
+    auto const* const shape = data->shape();
+    H5File* file = nullptr;
+    if (append)
+      file = new H5File( FILE_NAME, H5F_ACC_RDWR );
+    else
+      file = new H5File( FILE_NAME, H5F_ACC_TRUNC );
+    /*
+     * Create property list for a dataset and set up fill values.
+     */
+    unsigned long long fillvalue = 0ULL;   /* Fill value for the dataset */
+    DSetCreatPropList plist;
+    plist.setFillValue(PredType::NATIVE_ULLONG, &fillvalue);
+    /*
+     * Create dataspace for the dataset in the file.
+     */
+    hsize_t* const fdim = new hsize_t[rank];
+    for (int i = 0; i < rank; ++i)
+      fdim[i] = (hsize_t) shape[i];
+    DataSpace fspace( rank, fdim );
+    /*
+     * Create dataset and write it into the file.
+     */
+    DataSet* dataset = new DataSet(file->createDataSet(DATASET_NAME,\
+                                                       PredType::NATIVE_ULLONG, fspace, plist));
+
+    /*
+     * Create dataspace for the first dataset.
+     */
+    DataSpace mspace1( rank, fdim );
+    dataset->write( data->data(), PredType::NATIVE_ULLONG, mspace1, fspace );
+    delete dataset;
+    delete file;
+  }
+  catch( FileIException error )
+    {
+      error.printError();
+      exit(EXIT_FAILURE);
+    }
+  catch( DataSetIException error )
+    {
+      error.printError();
+      exit(EXIT_FAILURE);
+    }
+  catch( DataSpaceIException error )
+    {
+      error.printError();
+      exit(EXIT_FAILURE);
+    }
 }

@@ -42,11 +42,23 @@ int main(int argc, char *argv[])
   if (vm.count("bigtime") && vm.count("prefix"))
     {
       unsigned int bin_num = 160;
+      unsigned int const file_num = lst_files.file_num;
       unsigned long long tstart = (unsigned long long)2e9;
       unsigned long long tend = (unsigned long long)72e9;
-      typedef boost::multi_array<unsigned long, 2> array_type;
-      typedef array_type::index index;
+      typedef boost::multi_array<unsigned long long, 2> array_type;
+      //typedef array_type::index index;
+      unsigned long* const output_array = new unsigned long[bin_num];
       array_type big_time_result(boost::extents[bin_num][file_num]);
+      for (int i = 0; i<lst_files.files.size(); i++)
+        {
+          std::string const filename = lst_files.files[i];
+          LstReader reader(filename);
+          reader.decode_counts();
+          reader.big_time(1,tstart,tend,bin_num,output_array);
+          for (int j = 0; j<bin_num; j++)
+            big_time_result[j][i] = output_array[j];
+        }
+      save_marray_ull_to_h5(&big_time_result,"big_time_test.h5","bigtime",false);
     }
 
   return 0;
