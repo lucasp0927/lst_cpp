@@ -103,6 +103,43 @@ int main(int argc, char *argv[])
           delete [] output_array_raw;
         }
     }
+  if (vm.count("phase") && vm.count("prefix"))
+    {
+      unsigned int bin_num = config.phase.bin_num;
+      unsigned int const file_num = lst_files.file_num;
+      unsigned long long tstart = (unsigned long long)config.phase.tstart;
+      unsigned long long tend = (unsigned long long)config.phase.tend;
+      unsigned long long normalize_tstart = (unsigned long long)config.phase.normalize_tstart;
+      unsigned long long normalize_tend = (unsigned long long)config.phase.normalize_tend;
+      std::vector<int> const channels = config.phase.channels;
+      bool normalize = config.phase.normalize;
+      if (normalize)
+        {
 
+        }
+      else
+        {
+          typedef boost::multi_array<unsigned long long, 2> array_type;
+          unsigned long* const output_array = new unsigned long[bin_num];
+          array_type phase_result(boost::extents[bin_num][file_num]);
+          for (int i = 0; i<bin_num; i++)
+            for (int j = 0; j<file_num; j++)
+              phase_result[i][j] = 0;
+          for (int i = 0; i<lst_files.files.size(); i++)
+            {
+              std::string const filename = lst_files.files[i];
+              LstReader reader(filename);
+              reader.decode_counts();
+              for (auto it=channels.begin();it!=channels.end();it++)
+                {
+                  reader.phase_hist(*it,tstart,tend,bin_num,output_array,3);
+                  for (int j = 0; j<bin_num; j++)
+                    phase_result[j][i] += output_array[j]/channels.size();
+                }
+            }
+          save_marray_ull_to_h5(&phase_result,"phase_test.h5","phase",false);
+          delete [] output_array;
+        }
+    }
   return 0;
 }

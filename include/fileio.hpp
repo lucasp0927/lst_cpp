@@ -28,7 +28,18 @@ struct CONFIG
     unsigned long long tstart; //in ps
     unsigned long long tend;
   };
+  struct PHASE
+  {
+    std::vector<int> channels;
+    bool normalize;
+    unsigned long long normalize_tstart; //in ps
+    unsigned long long normalize_tend;
+    int bin_num;
+    unsigned long long tstart; //in ps
+    unsigned long long tend;
+  };
   BIGTIME bigtime;
+  PHASE phase;
 };
 
 std::string extract_file_name(std::string const & fullPath);

@@ -200,4 +200,13 @@ void read_yaml_config(std::string const filename, CONFIG& config)
   config.bigtime.tend = yaml_config["bigtime"]["end"].as<unsigned long long>()*1e9;
   for(auto it = yaml_config["bigtime"]["channels"].begin();it!=yaml_config["bigtime"]["channels"].end();it++)
       config.bigtime.channels.push_back(it->as<int>());
+
+  config.phase.normalize = yaml_config["phase"]["normalize"].as<bool>();
+  config.phase.normalize_tstart = yaml_config["phase"]["normalize_start"].as<unsigned long long>()*1e9;
+  config.phase.normalize_tend = yaml_config["phase"]["normalize_end"].as<unsigned long long>()*1e9;
+  config.phase.bin_num = yaml_config["phase"]["bin_num"].as<int>();
+  config.phase.tstart = (unsigned long long)(yaml_config["phase"]["start"].as<double>()*1e9);
+  config.phase.tend = (unsigned long long)yaml_config["phase"]["end"].as<double>()*1e9;
+  for(auto it = yaml_config["phase"]["channels"].begin();it!=yaml_config["phase"]["channels"].end();it++)
+      config.phase.channels.push_back(it->as<int>());
 }

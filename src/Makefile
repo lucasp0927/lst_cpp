@@ -19,10 +19,10 @@ BDIR = ../build
 _DEPS = LstReader.hpp Count.hpp
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_READ_LST_OBJ = read_lst.o LstReader.o big_time.o Count.o fileio.o
+_READ_LST_OBJ = read_lst.o LstReader.o big_time.o select.o Count.o fileio.o
 READ_LST_OBJ = $(patsubst %,$(ODIR)/%,$(_READ_LST_OBJ))
 
-_PRINT_HEADER_OBJ = print_header.o LstReader.o big_time.o Count.o
+_PRINT_HEADER_OBJ = print_header.o LstReader.o big_time.o select.o Count.o
 PRINT_HEADER_OBJ = $(patsubst %,$(ODIR)/%,$(_PRINT_HEADER_OBJ))
 
 $(ODIR)/%.o: %.cpp $(DEPS)
