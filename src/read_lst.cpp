@@ -52,26 +52,56 @@ int main(int argc, char *argv[])
       unsigned int const file_num = lst_files.file_num;
       unsigned long long tstart = (unsigned long long)config.bigtime.tstart;
       unsigned long long tend = (unsigned long long)config.bigtime.tend;
-      typedef boost::multi_array<unsigned long long, 2> array_type;
-      //typedef array_type::index index;
-      unsigned long* const output_array = new unsigned long[bin_num];
-      array_type big_time_result(boost::extents[bin_num][file_num]);
-      for (int i = 0; i<bin_num; i++)
-        for (int j = 0; j<file_num; j++)
-          big_time_result[i][j] = 0;
-      for (int i = 0; i<lst_files.files.size(); i++)
+      unsigned long long normalize_tstart = (unsigned long long)config.bigtime.normalize_tstart;
+      unsigned long long normalize_tend = (unsigned long long)config.bigtime.normalize_tend;
+      std::vector<int> const channels = config.bigtime.channels;
+      bool normalize = config.bigtime.normalize;
+      if (not normalize)
         {
-          std::string const filename = lst_files.files[i];
-          LstReader reader(filename);
-          reader.decode_counts();
-          for (auto it=config.bigtime.channels.begin();it!=config.bigtime.channels.end();it++)
+          typedef boost::multi_array<unsigned long long, 2> array_type;
+          unsigned long* const output_array = new unsigned long[bin_num];
+          array_type big_time_result(boost::extents[bin_num][file_num]);
+          for (int i = 0; i<bin_num; i++)
+            for (int j = 0; j<file_num; j++)
+              big_time_result[i][j] = 0;
+          for (int i = 0; i<lst_files.files.size(); i++)
             {
-              reader.big_time(*it,tstart,tend,bin_num,output_array);
+              std::string const filename = lst_files.files[i];
+              LstReader reader(filename);
+              reader.decode_counts();
+              reader.big_time(channels,tstart,tend,bin_num,output_array);
               for (int j = 0; j<bin_num; j++)
-                big_time_result[j][i] += output_array[j];
+                big_time_result[j][i] = output_array[j];
             }
+          save_marray_ull_to_h5(&big_time_result,"big_time_test.h5","bigtime",false);
+          delete [] output_array;
         }
-      save_marray_ull_to_h5(&big_time_result,"big_time_test.h5","bigtime",false);
+      else
+        {
+          typedef boost::multi_array<double, 2> array_type;
+          double* const output_array = new double[bin_num];
+          unsigned long* const output_array_raw = new unsigned long[bin_num];
+          array_type big_time_result(boost::extents[bin_num][file_num]);
+          for (int i = 0; i<bin_num; i++)
+            for (int j = 0; j<file_num; j++)
+              big_time_result[i][j] = 0.0;
+          for (int i = 0; i<lst_files.files.size(); i++)
+            {
+              std::string const filename = lst_files.files[i];
+              LstReader reader(filename);
+              reader.decode_counts();
+              for (auto it=config.bigtime.channels.begin();it!=config.bigtime.channels.end();it++)
+                {
+                  reader.big_time_normalize(*it,tstart,tend,bin_num,normalize_tstart,normalize_tend,output_array);
+                  for (int j = 0; j<bin_num; j++)
+                    big_time_result[j][i] += output_array[j]/config.bigtime.channels.size();
+                }
+            }
+
+          save_marray_d_to_h5(&big_time_result,"big_time_test.h5","bigtime",false);
+          delete [] output_array;
+          delete [] output_array_raw;
+        }
     }
 
   return 0;

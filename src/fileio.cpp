@@ -62,6 +62,68 @@ bool check_files_format(std::string const pattern, FILES* const lst_files)
   return true;
 }
 
+void save_marray_d_to_h5(boost::multi_array<double,2> const* const data, \
+                         std::string const filename,\
+                         std::string const datasetname,\
+                         bool const append)
+{
+  const H5std_string FILE_NAME(filename);
+  const H5std_string DATASET_NAME(datasetname);
+  try{
+    std::cout << "writing file: " << filename << std::endl;
+    std::cout << "        dataset: /" << datasetname << std::endl;
+    Exception::dontPrint();
+    int const rank = data->num_dimensions();
+    auto const* const shape = data->shape();
+    H5File* file = nullptr;
+    if (append)
+      file = new H5File( FILE_NAME, H5F_ACC_RDWR );
+    else
+      file = new H5File( FILE_NAME, H5F_ACC_TRUNC );
+    /*
+     * Create property list for a dataset and set up fill values.
+     */
+    unsigned long long fillvalue = 0.0;   /* Fill value for the dataset */
+    DSetCreatPropList plist;
+    plist.setFillValue(PredType::NATIVE_DOUBLE, &fillvalue);
+    /*
+     * Create dataspace for the dataset in the file.
+     */
+    hsize_t* const fdim = new hsize_t[rank];
+    for (int i = 0; i < rank; ++i)
+      fdim[i] = (hsize_t) shape[i];
+    DataSpace fspace( rank, fdim );
+    /*
+     * Create dataset and write it into the file.
+     */
+    DataSet* dataset = new DataSet(file->createDataSet(DATASET_NAME,\
+                                                       PredType::NATIVE_DOUBLE, fspace, plist));
+
+    /*
+     * Create dataspace for the first dataset.
+     */
+    DataSpace mspace1( rank, fdim );
+    dataset->write( data->data(), PredType::NATIVE_DOUBLE, mspace1, fspace );
+    delete dataset;
+    delete file;
+  }
+  catch( FileIException error )
+    {
+      error.printError();
+      exit(EXIT_FAILURE);
+    }
+  catch( DataSetIException error )
+    {
+      error.printError();
+      exit(EXIT_FAILURE);
+    }
+  catch( DataSpaceIException error )
+    {
+      error.printError();
+      exit(EXIT_FAILURE);
+    }
+}
+
 void save_marray_ull_to_h5(boost::multi_array<unsigned long long,2> const* const data, \
                          std::string const filename,\
                          std::string const datasetname,\

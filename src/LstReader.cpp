@@ -306,37 +306,7 @@ void LstReader::print_stat()
       select_ch.clear();
     }
 }
-void LstReader::big_time(unsigned int const channel,    \
-                unsigned long long const tstart,\
-                unsigned long long const tend,\
-                unsigned int const bin_num,\
-                unsigned long* const output_buffer) const
-{
-  std::vector<Count> counts_temp(counts.size());
-  select_channel(counts_temp, counts, channel);
-  std::sort(counts_temp.begin(), counts_temp.end(), compare_timedata());
 
-  for (unsigned int i = 0; i < bin_num; ++i)
-    output_buffer[i] = 0ULL;
-  unsigned long long interval = tend-tstart;
-  unsigned long long bin_size = interval/bin_num;
-  unsigned int bin_idx = 0;
-  for (auto it=counts_temp.begin(); it < counts_temp.end(); it++)
-    {
-      if (it->get_channel() == channel)
-        {
-          while (it->get_timedata() > tstart+(bin_idx+1)*bin_size &&\
-                 bin_idx < bin_num-1)
-            ++bin_idx;
-
-          if (it->get_timedata() >= tstart+bin_idx*bin_size &&\
-              it->get_timedata() <  tstart+(bin_idx+1)*bin_size)
-            {
-              ++output_buffer[bin_idx];
-            }
-        }
-    }
-}
 
 //select functions
 void LstReader::select_sweep(std::vector<Count>& result, std::vector<Count> const& input, unsigned int const sweep) const

@@ -68,6 +68,24 @@ public:
                 unsigned long long const tend,\
                 unsigned int const bin_num,\
                 unsigned long* const output_buffer) const;
+  void big_time(unsigned int const channel,\
+                unsigned int const sweep,\
+                unsigned long long const tstart,\
+                unsigned long long const tend,\
+                unsigned int const bin_num,\
+                unsigned long* const output_buffer) const;
+  void big_time(std::vector<int> const channels,\
+                unsigned long long const tstart,\
+                unsigned long long const tend,\
+                unsigned int const bin_num,\
+                unsigned long* const output_buffer) const;
+  void big_time_normalize(unsigned int const channel,\
+                          unsigned long long const tstart,  \
+                          unsigned long long const tend,    \
+                          unsigned int const bin_num,       \
+                          unsigned long long const normalize_tstart,  \
+                          unsigned long long const normalize_tend,    \
+                          double* const output_buffer) const;
   ///////////////////
   //select functions
   ///////////////////
