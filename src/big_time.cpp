@@ -128,6 +128,7 @@ void LstReader::big_time_normalize(unsigned int const channel,  \
         unsigned long long const norm_interval = normalize_tend - normalize_tstart;
         double const norm_count_rate = ((double)counts_ch_sw_time.size())/((double) norm_interval);
         double const norm_count = bin_size*norm_count_rate;
+        assert(norm_count != 0);
         big_time(channel, sw, tstart, tend, bin_num, output_array_raw);
         for (unsigned int i = 0; i < bin_num; ++i)
           output_buffer[i] += ((double)output_array_raw[i])/(norm_count*sw_preset);

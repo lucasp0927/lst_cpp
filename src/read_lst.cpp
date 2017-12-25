@@ -80,7 +80,6 @@ int main(int argc, char *argv[])
         {
           typedef boost::multi_array<double, 2> array_type;
           double* const output_array = new double[bin_num];
-          unsigned long* const output_array_raw = new unsigned long[bin_num];
           array_type big_time_result(boost::extents[bin_num][file_num]);
           for (int i = 0; i<bin_num; i++)
             for (int j = 0; j<file_num; j++)
@@ -100,7 +99,6 @@ int main(int argc, char *argv[])
 
           save_marray_d_to_h5(&big_time_result,"big_time_test.h5","bigtime",false);
           delete [] output_array;
-          delete [] output_array_raw;
         }
     }
   if (vm.count("phase") && vm.count("prefix"))
@@ -115,7 +113,26 @@ int main(int argc, char *argv[])
       bool normalize = config.phase.normalize;
       if (normalize)
         {
-
+          typedef boost::multi_array<double, 2> array_type;
+          array_type phase_result(boost::extents[bin_num][file_num]);
+          double* const output_array = new double[bin_num];
+          for (int i = 0; i<bin_num; i++)
+            for (int j = 0; j<file_num; j++)
+              phase_result[i][j] = 0.0;
+          for (int i = 0; i<lst_files.files.size(); i++)
+            {
+              std::string const filename = lst_files.files[i];
+              LstReader reader(filename);
+              reader.decode_counts();
+              for (auto it=channels.begin();it!=channels.end();it++)
+                {
+                  reader.phase_hist_normalize(*it,tstart,tend,bin_num,normalize_tstart,normalize_tend,output_array);
+                  for (int j = 0; j<bin_num; j++)
+                    phase_result[j][i] += output_array[j]/config.bigtime.channels.size();
+                }
+            }
+          save_marray_d_to_h5(&phase_result,"phase_test.h5","phase",false);
+          delete [] output_array;
         }
       else
         {
@@ -132,7 +149,7 @@ int main(int argc, char *argv[])
               reader.decode_counts();
               for (auto it=channels.begin();it!=channels.end();it++)
                 {
-                  reader.phase_hist(*it,tstart,tend,bin_num,output_array,3);
+                  reader.phase_hist(*it,tstart,tend,bin_num,output_array);
                   for (int j = 0; j<bin_num; j++)
                     phase_result[j][i] += output_array[j]/channels.size();
                 }

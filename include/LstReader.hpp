@@ -104,13 +104,27 @@ public:
   unsigned long long period_combined_variance(std::vector<unsigned long> const& period_count,\
                                          std::vector<unsigned long> const& periods,\
                                               std::vector<unsigned long long> const& periods_var)const;
+  ///////////////////
+  //phase hist
+  ///////////////////
   void phase_hist(unsigned int const channel,\
 	              unsigned long long const tstart,\
 	              unsigned long long const tend,\
 	              unsigned int const bin_num,\
 	              unsigned long* const result,\
-	              unsigned int const clock_ch\
+	              unsigned int const clock_ch = 3\
                   ) const;
+
+
+  void phase_hist_normalize(unsigned int const channel,\
+                            unsigned long long const tstart,\
+                            unsigned long long const tend,\
+                            unsigned int const bin_num,\
+                            unsigned long long const normalize_tstart,\
+                            unsigned long long const normalize_tend,\
+                            double* const result,\
+                            unsigned int const clock_ch = 3\
+                            ) const;
 };
 
 #endif
