@@ -8,7 +8,7 @@
 using namespace H5;
 struct FILES
 {
-  int prefix;
+  std::string prefix;
   int file_num;
   std::string path;
   std::vector<std::string> files;
