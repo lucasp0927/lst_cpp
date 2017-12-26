@@ -190,6 +190,12 @@ void read_yaml_config(std::string const filename, CONFIG& config)
 {
   std::cout << "Parse configure YAML file: "<<filename << std::endl;
   YAML::Node yaml_config = YAML::LoadFile(filename);
+  double det = yaml_config["detuning"]["start"].as<double>();
+  while (det <= yaml_config["detuning"]["end"].as<double>())
+    {
+      config.detuning.push_back(det);
+      det += yaml_config["detuning"]["step"].as<double>();
+    }
   //TODO: check config file format
   config.caption = yaml_config["caption"].as<std::string>();
   config.bigtime.normalize = yaml_config["bigtime"]["normalize"].as<bool>();

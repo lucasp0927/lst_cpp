@@ -107,16 +107,16 @@ public:
   ///////////////////
   //phase hist
   ///////////////////
-  void phase_hist(unsigned int const channel,\
-	              unsigned long long const tstart,\
-	              unsigned long long const tend,\
-	              unsigned int const bin_num,\
-	              unsigned long* const result,\
-	              unsigned int const clock_ch = 3\
-                  ) const;
+  unsigned long phase_hist(unsigned int const channel,\
+                           unsigned long long const tstart, \
+                           unsigned long long const tend,   \
+                           unsigned int const bin_num,      \
+                           unsigned long* const result,     \
+                           unsigned int const clock_ch = 3  \
+                           ) const;
 
 
-  void phase_hist_normalize(unsigned int const channel,\
+  unsigned long phase_hist_normalize(unsigned int const channel,\
                             unsigned long long const tstart,\
                             unsigned long long const tend,\
                             unsigned int const bin_num,\

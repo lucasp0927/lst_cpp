@@ -44,13 +44,13 @@ unsigned long long LstReader::period_combined_variance(std::vector<unsigned long
   return std::inner_product(temp.begin(), temp.end(), period_count.begin(), 0ULL)/total_counts;
 }
 
-void LstReader::phase_hist(unsigned int const channel,  \
-                unsigned long long const tstart,\
-                unsigned long long const tend,\
-                unsigned int const bin_num,\
-                unsigned long* const result,\
-                unsigned int const clock_ch\
-                ) const
+unsigned long LstReader::phase_hist(unsigned int const channel,  \
+                                    unsigned long long const tstart,    \
+                                    unsigned long long const tend,      \
+                                    unsigned int const bin_num,         \
+                                    unsigned long* const result,        \
+                                    unsigned int const clock_ch         \
+                                    ) const
 {
   assert(tend > tstart);
   for (unsigned int i = 0; i < bin_num; ++i)
@@ -122,17 +122,18 @@ void LstReader::phase_hist(unsigned int const channel,  \
       assert(hist_bin < bin_num);
       result[hist_bin]++;
     }
+  return avg_period;
 }
 
-void LstReader::phase_hist_normalize(unsigned int const channel,  \
-                                     unsigned long long const tstart,\
-                                     unsigned long long const tend,\
-                                     unsigned int const bin_num,\
-                                     unsigned long long const normalize_tstart,\
-                                     unsigned long long const normalize_tend,\
-                                     double* const result,\
-                                     unsigned int const clock_ch\
-                                     ) const
+unsigned long LstReader::phase_hist_normalize(unsigned int const channel,  \
+                                              unsigned long long const tstart, \
+                                              unsigned long long const tend, \
+                                              unsigned int const bin_num, \
+                                              unsigned long long const normalize_tstart, \
+                                              unsigned long long const normalize_tend, \
+                                              double* const result,     \
+                                              unsigned int const clock_ch \
+                                              ) const
 {
   assert(tend > tstart);
   unsigned long long* const result_raw = new unsigned long long[bin_num];
@@ -225,6 +226,6 @@ void LstReader::phase_hist_normalize(unsigned int const channel,  \
       for (unsigned int i = 0; i < bin_num; ++i)
           result[i] += ((double)result_raw[i])/norm_count/sw_preset;
     }
-
   delete [] result_raw;
+  return avg_period;
 }
