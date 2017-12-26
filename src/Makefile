@@ -3,7 +3,7 @@ UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
 	CC=g++
 	CFLAGS= -std=c++11 -O3 -I$(IDIR) -I/usr/include -Wall
-	LIBS=  -lhdf5 -lhdf5_cpp -lm -lboost_program_options -lyaml-cpp -lboost_iostreams -lboost_filesystem
+	LIBS=  -lhdf5 -lhdf5_cpp -lm -lboost_program_options -lyaml-cpp -lboost_iostreams -lboost_filesystem -lboost_system
 endif
 ifeq ($(UNAME_S),Darwin)
 	CC=g++
