@@ -29,7 +29,8 @@ po::variables_map parse_option(int const argc, char* const argv[])
     ("single,S", "process single file")
     ("inputfile,I", po::value<std::string>(),"Input .lst file") //require single
     ("outputfile,O", po::value<std::string>(),"Output .h5 file")//require single
-    ("prefix,P", po::value<std::string>(), "batch process prefix")
+    ("prefix", po::value<std::string>(), "batch process prefix")
+    ("process,P",po::value<int>(),"multi-thread thread number")
     ("config,C", po::value<std::string>(), "config file for bigtime, phase ans pulse")
     ("convert","convert to h5 files") //require prefix
     /*("removezero","remove zeros") //require prefix*/

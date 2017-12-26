@@ -12,7 +12,6 @@
 #include <limits>
 #include <algorithm>
 #include <numeric>
-
 #include <H5Cpp.h>
 #include "boost/multi_array.hpp"
 
