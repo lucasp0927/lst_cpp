@@ -39,18 +39,19 @@ bool check_files_format(std::string const pattern, FILES* const lst_files)
     std::string filename =  extract_file_name(files[0]);
     const std::string filepath =  extract_file_path(files[0]);
     std::regex_search (filename,m,filename_re);
-    const int prefix = stoi(m[1]);
+    //const int prefix = stoi(m[1]);
+    std::string prefix = m[1];
     //std::cout<<"prefix: " << prefix << std::endl;
     int file_num = files.size();
     for (int i = 1; i <= file_num; i++)
       {
-        std::string filename_test = std::to_string(prefix)+"_lst-"+std::to_string(i)+"_nozero.lst";
+        std::string filename_test = prefix+"_lst-"+std::to_string(i)+"_nozero.lst";
         if (std::find(files.begin(), files.end(), filepath+filename_test) == files.end())
           throw std::runtime_error(filename_test+" missing.");
       }
     //reorder
     for (int i = 1; i <= file_num; i++)
-        files[i-1] = filepath+std::to_string(prefix)+"_lst-"+std::to_string(i)+"_nozero.lst";
+        files[i-1] = filepath+prefix+"_lst-"+std::to_string(i)+"_nozero.lst";
     lst_files->prefix = prefix;
     lst_files->file_num = file_num;
     lst_files->files = files;

@@ -14,7 +14,7 @@
 namespace po = boost::program_options;
 
 template <typename T>
-void plot_bigtime(boost::multi_array<T, 2>& data, FILES& lst_files, CONFIG& config)
+void plot_bigtime(boost::multi_array<T, 2>& data, FILES& lst_files, CONFIG& config, std::string const filename)
 {
   unsigned int bin_num = config.bigtime.bin_num;
   unsigned int const file_num = lst_files.file_num;
@@ -33,7 +33,7 @@ void plot_bigtime(boost::multi_array<T, 2>& data, FILES& lst_files, CONFIG& conf
       }
   gp << "set terminal postscript eps enhanced color\n";
   gp << "unset key\n";
-  gp << "set output \"test.eps\"\n";
+  gp << "set output \"" << filename << "\"\n";
   gp << "set view map\n";
   gp << "set title \"" << config.caption <<"\"\n";
   gp << "set xlabel \"time(ms)\"\n";
@@ -45,7 +45,7 @@ void plot_bigtime(boost::multi_array<T, 2>& data, FILES& lst_files, CONFIG& conf
 }
 
 template <typename T>
-void plot_phase(boost::multi_array<T, 2>& data, FILES& lst_files, CONFIG& config, unsigned long const avg_period)
+void plot_phase(boost::multi_array<T, 2>& data, FILES& lst_files, CONFIG& config, unsigned long const avg_period, std::string const filename)
 {
   unsigned int bin_num = config.phase.bin_num;
   unsigned int const file_num = lst_files.file_num;
@@ -64,7 +64,7 @@ void plot_phase(boost::multi_array<T, 2>& data, FILES& lst_files, CONFIG& config
       }
   gp << "set terminal postscript eps enhanced color\n";
   gp << "unset key\n";
-  gp << "set output \"test.eps\"\n";
+  gp << "set output \"" << filename << "\"\n";
   gp << "set view map\n";
   gp << "set title \"" << config.caption <<"\"\n";
   gp << "set xlabel \"time(ns)\"\n";
@@ -145,10 +145,12 @@ int main(int argc, char *argv[])
               for (int j = 0; j<bin_num; j++)
                 big_time_result[j][i] = output_array[j];
             }
-          save_marray_ull_to_h5(&big_time_result,"big_time_test.h5","bigtime",false);
+          //output
+          std::string const h5_filename = lst_files.path+lst_files.prefix+"_bigtime.h5";
+          std::string const eps_filename = lst_files.path+lst_files.prefix+"_bigtime.eps";
+          save_marray_ull_to_h5(&big_time_result,h5_filename,"bigtime",false);
           delete [] output_array;
-          //plot
-          plot_bigtime(big_time_result,lst_files,config);
+          plot_bigtime(big_time_result,lst_files,config,eps_filename);
         }
       else
         {
@@ -170,11 +172,12 @@ int main(int argc, char *argv[])
                     big_time_result[j][i] += output_array[j]/config.bigtime.channels.size();
                 }
             }
-
-          save_marray_d_to_h5(&big_time_result,"big_time_test.h5","bigtime",false);
+          //output
+          std::string const h5_filename = lst_files.path+lst_files.prefix+"_bigtime.h5";
+          std::string const eps_filename = lst_files.path+lst_files.prefix+"_bigtime.eps";
+          save_marray_d_to_h5(&big_time_result,h5_filename,"bigtime",false);
           delete [] output_array;
-          //plot
-          plot_bigtime(big_time_result,lst_files,config);
+          plot_bigtime(big_time_result,lst_files,config,eps_filename);
         }
     }
   if (vm.count("phase") && vm.count("prefix"))
@@ -208,9 +211,12 @@ int main(int argc, char *argv[])
                     phase_result[j][i] += output_array[j]/config.bigtime.channels.size();
                 }
             }
-          save_marray_d_to_h5(&phase_result,"phase_test.h5","phase",false);
+          //output
+          std::string const h5_filename = lst_files.path+lst_files.prefix+"_phase.h5";
+          std::string const eps_filename = lst_files.path+lst_files.prefix+"_phase.eps";
+          save_marray_d_to_h5(&phase_result,h5_filename,"phase",false);
           delete [] output_array;
-          plot_phase(phase_result, lst_files, config, avg_period);
+          plot_phase(phase_result, lst_files, config, avg_period,eps_filename);
         }
       else
         {
@@ -233,9 +239,12 @@ int main(int argc, char *argv[])
                     phase_result[j][i] += output_array[j]/channels.size();
                 }
             }
-          save_marray_ull_to_h5(&phase_result,"phase_test.h5","phase",false);
+          //output
+          std::string const h5_filename = lst_files.path+lst_files.prefix+"_phase.h5";
+          std::string const eps_filename = lst_files.path+lst_files.prefix+"_phase.eps";
+          save_marray_ull_to_h5(&phase_result,h5_filename,"phase",false);
           delete [] output_array;
-          plot_phase(phase_result, lst_files, config, avg_period);
+          plot_phase(phase_result, lst_files, config, avg_period, eps_filename);
         }
     }
   return 0;
