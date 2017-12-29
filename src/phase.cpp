@@ -136,31 +136,30 @@ unsigned long LstReader::phase_hist_normalize(unsigned int const channel,  \
                                               ) const
 {
   assert(tend > tstart);
-  unsigned long long* const result_raw = new unsigned long long[bin_num];
   for (unsigned int i = 0; i < bin_num; ++i)
-    {
       result[i] = 0.0;
-      result_raw[i] = 0ULL;
-    }
   std::vector<std::vector<Count>> clock(sw_preset);
   std::vector<std::vector<Count>> data(sw_preset);
   std::vector<unsigned long> periods(sw_preset);
   std::vector<unsigned long> period_count(sw_preset);
   std::vector<unsigned long long> periods_var(sw_preset);
+
+  std::vector<Count> select_td(counts.size());
+  select_timedata(select_td,counts,tstart,tend);
+  std::vector<Count> clock_tot(select_td.size());
+  select_channel(clock_tot,select_td, clock_ch);
+  std::vector<Count> data_tot(select_td.size());
+  select_channel(data_tot,select_td, channel);
+  #pragma omp parallel for  num_threads(4)
   for (unsigned int sweep = 1; sweep <= sw_preset; ++sweep)
     {
-      //select sweep and timedata
-      std::vector<Count> select_sw(counts.size());
-      select_sweep(select_sw,counts,sweep);
-      std::vector<Count> select_sw_td(select_sw.size());
-      select_timedata(select_sw_td,select_sw,tstart,tend);
       //get clock_ch
-      clock[sweep-1].resize(select_sw_td.size());
-      select_channel(clock[sweep-1],select_sw_td, clock_ch);
+      clock[sweep-1].resize(clock_tot.size());
+      select_sweep(clock[sweep-1],clock_tot,sweep);
       period_count[sweep-1] = (unsigned long) clock[sweep-1].size()-1;
       //get data_ch
-      data[sweep-1].resize(select_sw_td.size());
-      select_channel(data[sweep-1],select_sw_td, channel);
+      data[sweep-1].resize(data_tot.size());
+      select_sweep(data[sweep-1],data_tot,sweep);
       //calculate average period
       periods[sweep-1] = (unsigned long)calculate_lattice_period(clock[sweep-1]);
       periods_var[sweep-1] = calculate_lattice_period_var(clock[sweep-1]);
@@ -178,17 +177,20 @@ unsigned long LstReader::phase_hist_normalize(unsigned int const channel,  \
   std::vector<std::vector<unsigned long>> delta_t(sw_preset);
   //std::vector<unsigned long> delta_t;
   unsigned long time_bin = avg_period/bin_num;
+
+  std::vector<Count> counts_ch(counts.size());
+  select_channel(counts_ch, counts, channel);
+  std::vector<Count> counts_ch_time(counts_ch.size());
+  select_timedata(counts_ch_time, counts_ch, normalize_tstart,normalize_tend);
+  #pragma omp parallel for  num_threads(4)
   for (unsigned int sw = 0; sw < sw_preset; ++sw)
     {
+      unsigned long long* const result_raw = new unsigned long long[bin_num];
       for (unsigned int i = 0; i < bin_num; ++i)
           result_raw[i] = 0ULL;
       //calculate normalize count rate
-      std::vector<Count> counts_ch(counts.size());
-      select_channel(counts_ch, counts, channel);
-      std::vector<Count> counts_ch_sw(counts_ch.size());
-      select_sweep(counts_ch_sw, counts_ch, sw+1);
-      std::vector<Count> counts_ch_sw_time(counts_ch_sw.size());
-      select_timedata(counts_ch_sw_time, counts_ch_sw, normalize_tstart,normalize_tend);
+      std::vector<Count> counts_ch_sw_time(counts_ch_time.size());
+      select_sweep(counts_ch_sw_time, counts_ch_time, sw+1);
       unsigned long long const norm_interval = normalize_tend - normalize_tstart;
       double const norm_count_rate = ((double)counts_ch_sw_time.size())/((double) norm_interval);
       double const norm_count = norm_count_rate*((double)(tend-tstart))/((double)bin_num);
@@ -225,7 +227,7 @@ unsigned long LstReader::phase_hist_normalize(unsigned int const channel,  \
         }
       for (unsigned int i = 0; i < bin_num; ++i)
           result[i] += ((double)result_raw[i])/norm_count/sw_preset;
+      delete [] result_raw;
     }
-  delete [] result_raw;
   return avg_period;
 }
