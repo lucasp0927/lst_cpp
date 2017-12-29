@@ -14,7 +14,7 @@
 #include <numeric>
 #include <H5Cpp.h>
 #include "boost/multi_array.hpp"
-
+#include <omp.h>
 #ifdef max
 #undef max
 #endif
@@ -69,6 +69,11 @@ public:
                 unsigned long* const output_buffer) const;
   void big_time(unsigned int const channel,\
                 unsigned int const sweep,\
+                unsigned long long const tstart,\
+                unsigned long long const tend,\
+                unsigned int const bin_num,\
+                unsigned long* const output_buffer) const;
+  void big_time(std::vector<Count>& counts_data,\
                 unsigned long long const tstart,\
                 unsigned long long const tend,\
                 unsigned int const bin_num,\
