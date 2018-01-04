@@ -35,7 +35,7 @@ void plot_bigtime(boost::multi_array<T, 2>& data, FILES& lst_files, CONFIG& conf
   gp << "unset key\n";
   gp << "set output \"" << filename << "\"\n";
   gp << "set view map\n";
-  gp << "set title \"" << config.caption <<"\"\n";
+  gp << "set title \"" << config.caption <<"\" offset 0,1\n"; //TODO: count \n in caption
   gp << "set xlabel \"time(ms)\"\n";
   gp << "set ylabel \"detuning(MHz)\"\n";
   //gp << "set lmargin 5\n";
@@ -66,7 +66,7 @@ void plot_phase(boost::multi_array<T, 2>& data, FILES& lst_files, CONFIG& config
   gp << "unset key\n";
   gp << "set output \"" << filename << "\"\n";
   gp << "set view map\n";
-  gp << "set title \"" << config.caption <<"\"\n";
+  gp << "set title \"" << config.caption <<"\" offset 0,1\n"; //TODO: count \n in caption
   gp << "set xlabel \"time(ns)\"\n";
   gp << "set ylabel \"detuning(MHz)\"\n";
   //gp << "set lmargin 5\n";
@@ -78,6 +78,7 @@ void plot_phase(boost::multi_array<T, 2>& data, FILES& lst_files, CONFIG& config
 int main(int argc, char *argv[])
 {
   po::variables_map vm = parse_option(argc,argv);
+  int const omp_thread_num = vm["process"].as<int>();
   FILES lst_files;
   CONFIG config;
   //Convert
@@ -167,7 +168,7 @@ int main(int argc, char *argv[])
               reader.decode_counts();
               for (auto it=config.bigtime.channels.begin();it!=config.bigtime.channels.end();it++)
                 {
-                  reader.big_time_normalize(*it,tstart,tend,bin_num,normalize_tstart,normalize_tend,output_array);
+                  reader.big_time_normalize(*it,tstart,tend,bin_num,normalize_tstart,normalize_tend,output_array,omp_thread_num);
                   for (int j = 0; j<bin_num; j++)
                     big_time_result[j][i] += output_array[j]/config.bigtime.channels.size();
                 }
@@ -206,7 +207,7 @@ int main(int argc, char *argv[])
               reader.decode_counts();
               for (auto it=channels.begin();it!=channels.end();it++)
                 {
-                  avg_period = reader.phase_hist_normalize(*it,tstart,tend,bin_num,normalize_tstart,normalize_tend,output_array);
+                  avg_period = reader.phase_hist_normalize(*it,tstart,tend,bin_num,normalize_tstart,normalize_tend,output_array,3,omp_thread_num);
                   for (int j = 0; j<bin_num; j++)
                     phase_result[j][i] += output_array[j]/config.bigtime.channels.size();
                 }

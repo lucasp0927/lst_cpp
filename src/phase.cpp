@@ -125,15 +125,22 @@ unsigned long LstReader::phase_hist(unsigned int const channel,  \
   return avg_period;
 }
 
+// int omp_thread_count() {
+//   int n = 0;
+// #pragma omp parallel reduction(+:n)
+//   n += 1;
+//   return n;
+// }
+
 unsigned long LstReader::phase_hist_normalize(unsigned int const channel,  \
                                               unsigned long long const tstart, \
                                               unsigned long long const tend, \
                                               unsigned int const bin_num, \
                                               unsigned long long const normalize_tstart, \
                                               unsigned long long const normalize_tend, \
-                                              double* const result,     \
-                                              unsigned int const clock_ch \
-                                              ) const
+                                              double* const result,\
+                                              unsigned int const clock_ch,\
+                                              int const thread_num) const
 {
   assert(tend > tstart);
   for (unsigned int i = 0; i < bin_num; ++i)
@@ -150,7 +157,9 @@ unsigned long LstReader::phase_hist_normalize(unsigned int const channel,  \
   select_channel(clock_tot,select_td, clock_ch);
   std::vector<Count> data_tot(select_td.size());
   select_channel(data_tot,select_td, channel);
-  #pragma omp parallel for  num_threads(4)
+  omp_set_num_threads(thread_num);
+  //std::cout << "using "  <<omp_thread_count() << " threads." << std::endl;
+  #pragma omp parallel for
   for (unsigned int sweep = 1; sweep <= sw_preset; ++sweep)
     {
       //get clock_ch

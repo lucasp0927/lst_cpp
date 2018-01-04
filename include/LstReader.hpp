@@ -89,7 +89,8 @@ public:
                           unsigned int const bin_num,       \
                           unsigned long long const normalize_tstart,  \
                           unsigned long long const normalize_tend,    \
-                          double* const output_buffer) const;
+                          double* const output_buffer,
+			  int const thread_num) const;
   ///////////////////
   //select functions
   ///////////////////
@@ -127,8 +128,8 @@ public:
                             unsigned long long const normalize_tstart,\
                             unsigned long long const normalize_tend,\
                             double* const result,\
-                            unsigned int const clock_ch = 3\
-                            ) const;
+			    unsigned int const clock_ch,\
+                            int const thread_num) const;
 };
 
 #endif
