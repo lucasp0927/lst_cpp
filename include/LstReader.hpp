@@ -15,6 +15,7 @@
 #include <H5Cpp.h>
 #include "boost/multi_array.hpp"
 #include <omp.h>
+#include <math.h>
 #ifdef max
 #undef max
 #endif
@@ -90,7 +91,7 @@ public:
                           unsigned long long const normalize_tstart,  \
                           unsigned long long const normalize_tend,    \
                           double* const output_buffer,
-			  int const thread_num) const;
+              int const thread_num) const;
   ///////////////////
   //select functions
   ///////////////////
@@ -128,8 +129,20 @@ public:
                             unsigned long long const normalize_tstart,\
                             unsigned long long const normalize_tend,\
                             double* const result,\
-			    unsigned int const clock_ch,\
+                            unsigned int const clock_ch,\
                             int const thread_num) const;
+  ///////////////////
+  //pulse
+  ///////////////////
+  void pulse_hist(unsigned int const channel,\
+                  unsigned long long const tstart,\
+                  unsigned long long const tend,\
+                  unsigned long const pulse_tstart,\
+                  unsigned long const pulse_tend,\
+                  std::vector<unsigned long>& result_timestamp, \
+                  std::vector<unsigned long>& result_count, \
+                  unsigned int const clock_ch,                 \
+                  int const thread_num) const;
 };
 
 #endif

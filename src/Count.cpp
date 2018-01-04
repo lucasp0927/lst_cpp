@@ -32,7 +32,7 @@ Count::Count(char* data, const std::string& time_patch)
     timedata |= (unsigned char) *(data+1);
     timedata <<= 4;
     timedata |= (unsigned char)(*(data)&0xF0)>>4;
-    timedata *= RESOLUTION;
+    //    timedata *= RESOLUTION;
   }else if (time_patch.compare("1a")==0){
     sweep = 0;
     sweep |= (unsigned char) *(data+5);
@@ -46,7 +46,7 @@ Count::Count(char* data, const std::string& time_patch)
     timedata |= (unsigned char) *(data+1);
     timedata <<= 4;
     timedata |= (unsigned char)(*(data)&0xF0)>>4;
-    timedata *= RESOLUTION;
+    //timedata *= RESOLUTION;
   }else if (time_patch.compare("0")==0){
     sweep = 0;
     timedata = 0ULL;
@@ -62,7 +62,7 @@ Count::Count(char* data, const std::string& time_patch)
     timedata |= (unsigned char) *(data+1);
     timedata <<= 4;
     timedata |= (unsigned char)(*(data)&0xF0)>>4;
-    timedata *= RESOLUTION;
+    //timedata *= RESOLUTION;
   }else if (time_patch.compare("5b")==0){
     sweep = 0;
     sweep |= (unsigned char) *(data+5);
@@ -76,7 +76,7 @@ Count::Count(char* data, const std::string& time_patch)
     timedata |= (unsigned char) *(data+1);
     timedata <<= 4;
     timedata |= (unsigned char)(*(data)&0xF0)>>4;
-    timedata *= RESOLUTION;
+    //timedata *= RESOLUTION;
   }else if (time_patch.compare("1")==0){
     sweep = 0;
     timedata = 0ULL;
@@ -87,7 +87,7 @@ Count::Count(char* data, const std::string& time_patch)
     timedata |= (unsigned char) *(data+1);
     timedata <<= 4;
     timedata |= (unsigned char)(*(data)&0xF0)>>4;
-    timedata *= RESOLUTION;
+    //timedata *= RESOLUTION;
   }else if (time_patch.compare("2")==0){
     sweep = 0;
     timedata = 0ULL;
@@ -102,7 +102,7 @@ Count::Count(char* data, const std::string& time_patch)
     timedata |= (unsigned char) *(data+1);
     timedata <<= 4;
     timedata |= (unsigned char)(*(data)&0xF0)>>4;
-    timedata *= RESOLUTION;
+    //timedata *= RESOLUTION;
   }else if (time_patch.compare("32")==0){
     sweep = (unsigned char)(*(data+5))&0x7F;
     timedata = 0ULL;
@@ -115,6 +115,6 @@ Count::Count(char* data, const std::string& time_patch)
     timedata |= (unsigned char) *(data+1);
     timedata <<= 4;
     timedata |= (unsigned char)(*(data)&0xF0)>>4;
-    timedata *= RESOLUTION;
+    //timedata *= RESOLUTION;
   }
 }

@@ -248,5 +248,46 @@ int main(int argc, char *argv[])
           plot_phase(phase_result, lst_files, config, avg_period, eps_filename);
         }
     }
+  if (vm.count("pulse") && vm.count("prefix"))
+    {
+      unsigned int const file_num = lst_files.file_num;
+      unsigned long long tstart = (unsigned long long)config.pulse.tstart;
+      unsigned long long tend = (unsigned long long)config.pulse.tend;
+      unsigned long pulse_tstart = (unsigned long)config.pulse.pulse_tstart;
+      unsigned long pulse_tend = (unsigned long)config.pulse.pulse_tend;
+      std::vector<int> const channels = config.pulse.channels;
+
+      //std::vector<unsigned long> result_timestamp;
+      std::vector<std::vector<unsigned long>> result_timestamp(lst_files.files.size());
+      std::vector<std::vector<unsigned long>> result_count(lst_files.files.size());
+      //result_count.resize(lst_files.files.size());
+      for (int i = 0; i<lst_files.files.size(); i++)
+        {
+          std::string const filename = lst_files.files[i];
+          LstReader reader(filename);
+          reader.decode_counts();
+          for (auto it=channels.begin();it!=channels.end();it++)
+            {
+              reader.pulse_hist(*it, tstart, tend, pulse_tstart, pulse_tend,\
+                                result_timestamp[i], result_count[i], 3, omp_thread_num);
+            }
+        }
+      //save file
+      typedef boost::multi_array<unsigned long long, 2> array_type;
+      int timestamp_size = result_timestamp[0].size();
+      array_type pulse_result_timestamp(boost::extents[timestamp_size][file_num]);
+      array_type pulse_result_count(boost::extents[timestamp_size][file_num]);
+      for (int i = 0; i<file_num; i++)
+        {
+          for (int j = 0; j<timestamp_size; j++)
+            {
+              pulse_result_timestamp[j][i] = result_timestamp[i][j];
+              pulse_result_count[j][i] = result_count[i][j];
+            }
+        }
+      std::string const h5_filename = lst_files.path+lst_files.prefix+"_pulse.h5";
+      save_marray_ull_to_h5(&pulse_result_timestamp,h5_filename,"timestamp",false);
+      save_marray_ull_to_h5(&pulse_result_count,h5_filename,"count",true);
+    }
   return 0;
 }

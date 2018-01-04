@@ -38,8 +38,17 @@ struct CONFIG
     unsigned long long tstart; //in ps
     unsigned long long tend;
   };
+  struct PULSE
+  {
+    std::vector<int> channels;
+    unsigned long long tstart;
+    unsigned long long tend;
+    unsigned long pulse_tstart;
+    unsigned long pulse_tend;
+  };
   BIGTIME bigtime;
   PHASE phase;
+  PULSE pulse;
 };
 
 std::string extract_file_name(std::string const & fullPath);
