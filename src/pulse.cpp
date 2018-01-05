@@ -10,7 +10,6 @@ void LstReader::pulse_hist(unsigned int const channel, \
                            int const thread_num) const
 {
   assert(tend > tstart);
-
   //result.resize();
   std::vector<std::vector<Count>> clock(sw_preset);
   std::vector<std::vector<Count>> data(sw_preset);
