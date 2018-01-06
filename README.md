@@ -1,9 +1,10 @@
 # Installation
 ## Install on OSX
-1. brew tap homebrew/science
-2. brew install boost hdf5 h5utils python3
-3. cd ./src
-4. make
+1. brew reinstall --with-toolchain llvm
+2. brew tap homebrew/science
+3. brew install boost hdf5 h5utils python3
+4. cd ./src
+5. make
 
 # Usage
 ## Example
