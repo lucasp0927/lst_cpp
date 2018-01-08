@@ -61,9 +61,9 @@ void LstReader::pulse_hist(unsigned int const channel, \
             }
           while ((it+1)->get_timedata() >= (clock_it+1)->get_timedata())
             {
+              ++clock_it;
               if(clock_it == clock[sw].end())
                 break;
-              ++clock_it;
             }
         }
     }

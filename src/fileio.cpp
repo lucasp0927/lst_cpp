@@ -28,7 +28,6 @@ bool check_files_format(std::string const pattern, FILES* const lst_files)
       throw std::runtime_error("No file found.");
     //check filename format
     const std::regex filename_re("(\\d{6})(_lst-)(\\d+)(_nozero.lst)");
-    std::cout<<files.size()<<std::endl;
     for (auto it = files.begin(); it != files.end(); it++)
       {
         std::string filename =  extract_file_name(*it);

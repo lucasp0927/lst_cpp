@@ -5,7 +5,7 @@ void LstReader::big_time(unsigned int const channel,\
                          unsigned int const bin_num,        \
                          unsigned long* const output_buffer) const
 {
-  std::vector<Count> counts_temp(counts.size());
+  std::vector<Count> counts_temp;
   select_channel(counts_temp, counts, channel);
   std::sort(counts_temp.begin(), counts_temp.end(), compare_timedata());
 
@@ -38,9 +38,9 @@ void LstReader::big_time(unsigned int const channel,\
                          unsigned int const bin_num,        \
                          unsigned long* const output_buffer) const
 {
-  std::vector<Count> counts_ch(counts.size());
+  std::vector<Count> counts_ch;
   select_channel(counts_ch, counts, channel);
-  std::vector<Count> counts_temp(counts_ch.size());
+  std::vector<Count> counts_temp;
   select_sweep(counts_temp, counts_ch, sweep);
   std::sort(counts_temp.begin(), counts_temp.end(), compare_timedata());
 
@@ -108,7 +108,7 @@ void LstReader::big_time(std::vector<int> const channels,   \
   for (auto it=channels.begin();it!=channels.end();it++)
     {
       int channel = *it;
-      std::vector<Count> counts_temp(counts.size());
+      std::vector<Count> counts_temp;
       select_channel(counts_temp, counts, channel);
       std::sort(counts_temp.begin(), counts_temp.end(), compare_timedata());
       unsigned int bin_idx = 0;
@@ -154,19 +154,18 @@ void LstReader::big_time_normalize(unsigned int const channel,\
     unsigned long long const interval = tend-tstart;
     unsigned long long const bin_size = interval/bin_num;
     omp_set_num_threads(thread_num);
-    std::vector<Count> counts_ch(counts.size());
+    std::vector<Count> counts_ch;
     select_channel(counts_ch, counts, channel);
-    std::vector<Count> counts_ch_time_norm(counts_ch.size());
+    std::vector<Count> counts_ch_time_norm;
     select_timedata(counts_ch_time_norm, counts_ch, normalize_tstart,normalize_tend);
     //std::cout << "using "  <<omp_thread_count() << " threads." << std::endl;
     #pragma omp parallel for
     for (unsigned int sw = 1; sw <= sw_preset; ++sw)
       {
-	unsigned long* const output_array_raw = new unsigned long[bin_num];
-
-        std::vector<Count> counts_ch_sw_time_norm(counts_ch_time_norm.size());
+        unsigned long* const output_array_raw = new unsigned long[bin_num];
+        std::vector<Count> counts_ch_sw_time_norm;
         select_sweep(counts_ch_sw_time_norm, counts_ch_time_norm, sw);
-        std::vector<Count> counts_ch_sw(counts_ch.size());
+        std::vector<Count> counts_ch_sw;
         select_sweep(counts_ch_sw, counts_ch, sw);
         unsigned long long const norm_interval = normalize_tend - normalize_tstart;
         double const norm_count_rate = ((double)counts_ch_sw_time_norm.size())/((double) norm_interval);
