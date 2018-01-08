@@ -188,6 +188,7 @@ void LstReader::save_non_zero_counts(const std::string& out_filename) const
 
 void LstReader::decode_counts()
 {
+  std::cout << "start decoding..." << std::endl;
   counts.clear();
   std::vector<Count> temp;
   for (unsigned long long i=0; i < total_data_count; ++i)
@@ -204,12 +205,13 @@ void LstReader::decode_counts()
         }
     }
   std::cout << "remove out of range data" << std::endl;
-  std::vector<Count> select_sw(temp.size());
+  std::vector<Count> select_sw;
   select_sweep(select_sw, temp, 1, sw_preset);
-  std::vector<Count> select_sw_ch(select_sw.size());
+  std::vector<Count> select_sw_ch;
   select_channel(select_sw_ch, select_sw, 1, 6);
-  counts.resize(select_sw_ch.size());
+  //counts.resize(select_sw_ch.size());
   select_timedata(counts, select_sw_ch, 0ULL, timedata_limit);
+  std::cout << "done decoding." << std::endl;
 }
 
 void LstReader::save_counts_to_h5(std::string const filename, std::string const datasetname, bool const append)
@@ -293,12 +295,12 @@ void LstReader::print_stat()
 {
   for (unsigned int ch = 1; ch <= 6; ++ch)
     {
-      std::vector<Count> select_ch(counts.size());
+      std::vector<Count> select_ch;
       select_channel(select_ch,counts,ch);
       std::cout << "Total counts in channel " << ch << ": " << select_ch.size() << std::endl;
       for (unsigned int sw = 1; sw <= sw_preset; ++sw)
         {
-          std::vector<Count> select_sw(select_ch.size());
+          std::vector<Count> select_sw;
           select_sweep(select_sw,select_ch,sw);
           std::cout << "   channel: " << ch << ", sweep: "<< sw <<", counts: " << select_sw.size() << std::endl;
           select_sw.clear();

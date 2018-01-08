@@ -108,6 +108,7 @@ void save_marray_d_to_h5(boost::multi_array<double,2> const* const data, \
     dataset->write( data->data(), PredType::NATIVE_DOUBLE, mspace1, fspace );
     delete dataset;
     delete file;
+    delete [] fdim;
   }
   catch( FileIException error )
     {
@@ -170,6 +171,7 @@ void save_marray_ull_to_h5(boost::multi_array<unsigned long long,2> const* const
     dataset->write( data->data(), PredType::NATIVE_ULLONG, mspace1, fspace );
     delete dataset;
     delete file;
+    delete [] fdim;
   }
   catch( FileIException error )
     {
