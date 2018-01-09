@@ -8,9 +8,9 @@ const unsigned int RESOLUTION = 200;//200 ps
 class Count
 {
 private:
+  unsigned long long timedata;
   unsigned int edge;
   unsigned int channel;
-  unsigned long long timedata;
   unsigned int sweep;
   friend std::ostream& operator<<(std::ostream &strm, const Count &c);
 public:
