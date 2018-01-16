@@ -28,7 +28,6 @@ bool check_files_format(std::string const pattern, FILES* const lst_files)
       throw std::runtime_error("No file found.");
     //check filename format
     const std::regex filename_re("(\\d{6})(_lst-)(\\d+)(_nozero.lst)");
-    std::cout<<files.size()<<std::endl;
     for (auto it = files.begin(); it != files.end(); it++)
       {
         std::string filename =  extract_file_name(*it);
@@ -108,6 +107,7 @@ void save_marray_d_to_h5(boost::multi_array<double,2> const* const data, \
     dataset->write( data->data(), PredType::NATIVE_DOUBLE, mspace1, fspace );
     delete dataset;
     delete file;
+    delete [] fdim;
   }
   catch( FileIException error )
     {
@@ -170,6 +170,7 @@ void save_marray_ull_to_h5(boost::multi_array<unsigned long long,2> const* const
     dataset->write( data->data(), PredType::NATIVE_ULLONG, mspace1, fspace );
     delete dataset;
     delete file;
+    delete [] fdim;
   }
   catch( FileIException error )
     {

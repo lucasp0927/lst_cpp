@@ -26,23 +26,23 @@ void LstReader::pulse_hist(unsigned int const channel, \
   result_count.resize(result_timestamp.size());
   for (int i = 0;i < result_timestamp.size();i++)
     result_count[i] = 0;
-  std::vector<Count> select_td(counts.size());
+  std::vector<Count> select_td;
   select_timedata(select_td,counts,tstart,tend);
-  std::vector<Count> clock_tot(select_td.size());
+  std::vector<Count> clock_tot;
   select_channel(clock_tot,select_td, clock_ch);
-  std::vector<Count> data_tot(select_td.size());
+  std::vector<Count> data_tot;
   select_channel(data_tot,select_td, channel);
   omp_set_num_threads(thread_num);
   #pragma omp parallel for
   for (unsigned int sweep = 1; sweep <= sw_preset; ++sweep)
     {
-      clock[sweep-1].resize(clock_tot.size());
+      //clock[sweep-1].resize(clock_tot.size());
       select_sweep(clock[sweep-1],clock_tot,sweep);
-      data[sweep-1].resize(data_tot.size());
+      //data[sweep-1].resize(data_tot.size());
       select_sweep(data[sweep-1],data_tot,sweep);
     }
   std::vector<std::vector<unsigned long>> delta_t(sw_preset);
-  #pragma omp parallel for  num_threads(4)
+  #pragma omp parallel for
   for (unsigned int sw = 0; sw < sw_preset; ++sw)
     {
       if (data[sw].size() == 0 || clock[sw].size() <2)
@@ -61,9 +61,9 @@ void LstReader::pulse_hist(unsigned int const channel, \
             }
           while ((it+1)->get_timedata() >= (clock_it+1)->get_timedata())
             {
+              ++clock_it;
               if(clock_it == clock[sw].end())
                 break;
-              ++clock_it;
             }
         }
     }

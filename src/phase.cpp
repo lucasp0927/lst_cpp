@@ -63,16 +63,14 @@ unsigned long LstReader::phase_hist(unsigned int const channel,  \
   for (unsigned int sweep = 1; sweep <= sw_preset; ++sweep)
     {
       //select sweep and timedata
-      std::vector<Count> select_sw(counts.size());
+      std::vector<Count> select_sw;
       select_sweep(select_sw,counts,sweep);
-      std::vector<Count> select_sw_td(select_sw.size());
+      std::vector<Count> select_sw_td;
       select_timedata(select_sw_td,select_sw,tstart,tend);
       //get clock_ch
-      clock[sweep-1].resize(select_sw_td.size());
       select_channel(clock[sweep-1],select_sw_td, clock_ch);
       period_count[sweep-1] = (unsigned long) clock[sweep-1].size()-1;
       //get data_ch
-      data[sweep-1].resize(select_sw_td.size());
       select_channel(data[sweep-1],select_sw_td, channel);
       //calculate average period
       periods[sweep-1] = (unsigned long)calculate_lattice_period(clock[sweep-1]);
@@ -151,11 +149,11 @@ unsigned long LstReader::phase_hist_normalize(unsigned int const channel,  \
   std::vector<unsigned long> period_count(sw_preset);
   std::vector<unsigned long long> periods_var(sw_preset);
 
-  std::vector<Count> select_td(counts.size());
+  std::vector<Count> select_td;
   select_timedata(select_td,counts,tstart,tend);
-  std::vector<Count> clock_tot(select_td.size());
+  std::vector<Count> clock_tot;
   select_channel(clock_tot,select_td, clock_ch);
-  std::vector<Count> data_tot(select_td.size());
+  std::vector<Count> data_tot;
   select_channel(data_tot,select_td, channel);
   omp_set_num_threads(thread_num);
   //std::cout << "using "  <<omp_thread_count() << " threads." << std::endl;
@@ -163,11 +161,11 @@ unsigned long LstReader::phase_hist_normalize(unsigned int const channel,  \
   for (unsigned int sweep = 1; sweep <= sw_preset; ++sweep)
     {
       //get clock_ch
-      clock[sweep-1].resize(clock_tot.size());
+      //clock[sweep-1].resize(clock_tot.size());
       select_sweep(clock[sweep-1],clock_tot,sweep);
       period_count[sweep-1] = (unsigned long) clock[sweep-1].size()-1;
       //get data_ch
-      data[sweep-1].resize(data_tot.size());
+      //data[sweep-1].resize(data_tot.size());
       select_sweep(data[sweep-1],data_tot,sweep);
       //calculate average period
       periods[sweep-1] = (unsigned long)calculate_lattice_period(clock[sweep-1]);
@@ -187,18 +185,18 @@ unsigned long LstReader::phase_hist_normalize(unsigned int const channel,  \
   //std::vector<unsigned long> delta_t;
   unsigned long time_bin = avg_period/bin_num;
 
-  std::vector<Count> counts_ch(counts.size());
+  std::vector<Count> counts_ch;
   select_channel(counts_ch, counts, channel);
-  std::vector<Count> counts_ch_time(counts_ch.size());
+  std::vector<Count> counts_ch_time;
   select_timedata(counts_ch_time, counts_ch, normalize_tstart,normalize_tend);
-  #pragma omp parallel for  num_threads(4)
+  #pragma omp parallel for
   for (unsigned int sw = 0; sw < sw_preset; ++sw)
     {
       unsigned long long* const result_raw = new unsigned long long[bin_num];
       for (unsigned int i = 0; i < bin_num; ++i)
           result_raw[i] = 0ULL;
       //calculate normalize count rate
-      std::vector<Count> counts_ch_sw_time(counts_ch_time.size());
+      std::vector<Count> counts_ch_sw_time;
       select_sweep(counts_ch_sw_time, counts_ch_time, sw+1);
       unsigned long long const norm_interval = normalize_tend - normalize_tstart;
       double const norm_count_rate = ((double)counts_ch_sw_time.size())/((double) norm_interval);
@@ -210,21 +208,23 @@ unsigned long LstReader::phase_hist_normalize(unsigned int const channel,  \
       auto clock_it = clock[sw].begin();
       while (data[sw][0].get_timedata() > (clock_it+1)->get_timedata() && (clock_it+1)!=clock[sw].end())
         ++clock_it;
-      for (auto it=data[sw].begin(); it < data[sw].end(); it++) //go over all data
+      for (auto it=data[sw].begin(); it < data[sw].end()-1; it++) //go over all data
         {
           unsigned long long dt = (it->get_timedata()-clock_it->get_timedata());
-  		if ((clock_it + 1)->get_timedata() - clock_it->get_timedata() == 0ULL)
+          if ((clock_it + 1)->get_timedata() - clock_it->get_timedata() == 0ULL)
             dt = 0ULL;
           else
             dt = dt*avg_period/((clock_it+1)->get_timedata()-clock_it->get_timedata());
-  		if (dt < avg_period)
+          if (dt < avg_period)
             delta_t[sw].push_back((unsigned long)dt);
           while ((it+1)->get_timedata() >= (clock_it+1)->get_timedata())
             {
-              if(clock_it == clock[sw].end())
-                break;
               ++clock_it;
+              if((clock_it+1) == clock[sw].end())
+                break;
             }
+          if ((clock_it+1) == clock[sw].end())
+            break;
         }
       //make histogram
       for (auto it=delta_t[sw].begin(); it < delta_t[sw].end(); it++)
