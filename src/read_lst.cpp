@@ -255,6 +255,7 @@ int main(int argc, char *argv[])
       unsigned long long tend = (unsigned long long)config.pulse.tend;
       unsigned long pulse_tstart = (unsigned long)config.pulse.pulse_tstart;
       unsigned long pulse_tend = (unsigned long)config.pulse.pulse_tend;
+      long clock_delay = (long)config.pulse.clock_delay;
       std::vector<int> const channels = config.pulse.channels;
 
       //std::vector<unsigned long> result_timestamp;
@@ -269,7 +270,7 @@ int main(int argc, char *argv[])
           for (auto it=channels.begin();it!=channels.end();it++)
             {
               reader.pulse_hist(*it, tstart, tend, pulse_tstart, pulse_tend,\
-                                result_timestamp[i], result_count[i], 3, omp_thread_num);
+                                result_timestamp[i], result_count[i], 3, clock_delay, omp_thread_num);
             }
         }
       //save file

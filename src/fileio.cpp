@@ -224,6 +224,7 @@ void read_yaml_config(std::string const filename, CONFIG& config)
   config.pulse.tend = (unsigned long long)(yaml_config["pulse"]["end"].as<double>()*1e9);
   config.pulse.pulse_tstart = (unsigned long)(yaml_config["pulse"]["pulse_start"].as<double>()*1e3);
   config.pulse.pulse_tend = (unsigned long)(yaml_config["pulse"]["pulse_end"].as<double>()*1e3);
+  config.pulse.clock_delay = (long)(yaml_config["pulse"]["clock_delay"].as<double>()*1e3);
   for(auto it = yaml_config["pulse"]["channels"].begin();it!=yaml_config["pulse"]["channels"].end();it++)
       config.pulse.channels.push_back(it->as<int>());
 }

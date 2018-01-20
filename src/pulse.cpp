@@ -1,12 +1,13 @@
 #include "LstReader.hpp"
 void LstReader::pulse_hist(unsigned int const channel, \
-                           unsigned long long const tstart,             \
-                           unsigned long long const tend,               \
-                           unsigned long const pulse_tstart,            \
-                           unsigned long const pulse_tend,              \
+                           unsigned long long const tstart,\
+                           unsigned long long const tend,\
+                           unsigned long const pulse_tstart,\
+                           unsigned long const pulse_tend,\
                            std::vector<unsigned long>& result_timestamp, \
                            std::vector<unsigned long>& result_count, \
-                           unsigned int const clock_ch,                 \
+                           unsigned int const clock_ch,\
+			   long const clock_delay,\
                            int const thread_num) const
 {
   assert(tend > tstart);
@@ -48,18 +49,18 @@ void LstReader::pulse_hist(unsigned int const channel, \
       if (data[sw].size() == 0 || clock[sw].size() <2)
         continue; //TODO continue or break?
       auto clock_it = clock[sw].begin();
-      while (data[sw][0].get_timedata() > (clock_it+1)->get_timedata() && (clock_it+1)!=clock[sw].end())
+      while (data[sw][0].get_timedata() > (clock_it+1)->get_timedata()+clock_delay && (clock_it+1)!=clock[sw].end())
         ++clock_it;
       for (auto it=data[sw].begin(); it < data[sw].end(); it++) //go over all data
         {
-          unsigned long long dt = (it->get_timedata()-clock_it->get_timedata());
+          unsigned long long dt = (it->get_timedata()-(clock_it->get_timedata()+clock_delay));
           if (dt >= pulse_tstart && dt < pulse_tend)
             {
               assert((dt-pt)%RESOLUTION==0);
               assert((dt-pt)/RESOLUTION<result_timestamp.size());
               result_count[(dt-pt)/RESOLUTION]++;
             }
-          while ((it+1)->get_timedata() >= (clock_it+1)->get_timedata())
+          while ((it+1)->get_timedata() >= (clock_it+1)->get_timedata()+clock_delay)
             {
               ++clock_it;
               if(clock_it == clock[sw].end())

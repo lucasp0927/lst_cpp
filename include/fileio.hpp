@@ -45,6 +45,7 @@ struct CONFIG
     unsigned long long tend;
     unsigned long pulse_tstart;
     unsigned long pulse_tend;
+    long clock_delay;
   };
   BIGTIME bigtime;
   PHASE phase;

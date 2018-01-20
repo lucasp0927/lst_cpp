@@ -141,7 +141,8 @@ public:
                   unsigned long const pulse_tend,\
                   std::vector<unsigned long>& result_timestamp, \
                   std::vector<unsigned long>& result_count, \
-                  unsigned int const clock_ch,                 \
+                  unsigned int const clock_ch,\
+		  long const clock_delay,\
                   int const thread_num) const;
 };
 
