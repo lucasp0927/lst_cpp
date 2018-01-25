@@ -29,6 +29,7 @@ po::variables_map parse_option(int const argc, char* const argv[])
     ("inputfile,I", po::value<std::string>(),"Input .lst file") //require single
     ("outputfile,O", po::value<std::string>(),"Output .h5 file")//require single
     ("prefix", po::value<std::string>(), "batch process prefix")
+    ("postfix", po::value<std::string>()->default_value(""), "output files postfix")
     ("process,P",po::value<int>()->default_value(1),"multi-thread thread number")
     ("config,C", po::value<std::string>(), "config file for bigtime, phase ans pulse")
     ("convert","convert to h5 files") //require prefix

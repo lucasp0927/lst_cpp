@@ -147,8 +147,19 @@ int main(int argc, char *argv[])
                 big_time_result[j][i] = output_array[j];
             }
           //output
-          std::string const h5_filename = lst_files.path+lst_files.prefix+"_bigtime.h5";
-          std::string const eps_filename = lst_files.path+lst_files.prefix+"_bigtime.eps";
+	  std::string postfix = vm["postfix"].as<std::string>();
+	  std::string h5_filename = "";
+	  std::string eps_filename = "";
+	  if (postfix.empty())
+	    {
+	      h5_filename = lst_files.path+lst_files.prefix+"_bigtime.h5";
+	      eps_filename = lst_files.path+lst_files.prefix+"_bigtime.eps";
+	    }
+	  else
+	    {
+	      h5_filename = lst_files.path+lst_files.prefix+"_bigtime_"+postfix+".h5";
+	      eps_filename = lst_files.path+lst_files.prefix+"_bigtime_"+postfix+".eps";
+	    }
           save_marray_ull_to_h5(&big_time_result,h5_filename,"bigtime",false);
           delete [] output_array;
           plot_bigtime(big_time_result,lst_files,config,eps_filename);
@@ -174,8 +185,21 @@ int main(int argc, char *argv[])
                 }
             }
           //output
-          std::string const h5_filename = lst_files.path+lst_files.prefix+"_bigtime.h5";
-          std::string const eps_filename = lst_files.path+lst_files.prefix+"_bigtime.eps";
+	  std::string postfix = vm["postfix"].as<std::string>();
+	  std::string h5_filename = "";
+	  std::string eps_filename = "";
+	  if (postfix.empty())
+	    {
+	      h5_filename = lst_files.path+lst_files.prefix+"_bigtime.h5";
+	      eps_filename = lst_files.path+lst_files.prefix+"_bigtime.eps";
+	    }
+	  else
+	    {
+	      h5_filename = lst_files.path+lst_files.prefix+"_bigtime_"+postfix+".h5";
+	      eps_filename = lst_files.path+lst_files.prefix+"_bigtime_"+postfix+".eps";
+	    }
+          //std::string const h5_filename = lst_files.path+lst_files.prefix+"_bigtime.h5";
+          //std::string const eps_filename = lst_files.path+lst_files.prefix+"_bigtime.eps";
           save_marray_d_to_h5(&big_time_result,h5_filename,"bigtime",false);
           delete [] output_array;
           plot_bigtime(big_time_result,lst_files,config,eps_filename);
@@ -213,8 +237,21 @@ int main(int argc, char *argv[])
                 }
             }
           //output
-          std::string const h5_filename = lst_files.path+lst_files.prefix+"_phase.h5";
-          std::string const eps_filename = lst_files.path+lst_files.prefix+"_phase.eps";
+	  std::string postfix = vm["postfix"].as<std::string>();
+	  std::string h5_filename = "";
+	  std::string eps_filename = "";
+	  if (postfix.empty())
+	    {
+	      h5_filename = lst_files.path+lst_files.prefix+"_phase.h5";
+	      eps_filename = lst_files.path+lst_files.prefix+"_phase.eps";
+	    }
+	  else
+	    {
+	      h5_filename = lst_files.path+lst_files.prefix+"_phase_"+postfix+".h5";
+	      eps_filename = lst_files.path+lst_files.prefix+"_phase_"+postfix+".eps";
+	    }
+          //std::string const h5_filename = lst_files.path+lst_files.prefix+"_phase.h5";
+          //std::string const eps_filename = lst_files.path+lst_files.prefix+"_phase.eps";
           save_marray_d_to_h5(&phase_result,h5_filename,"phase",false);
           delete [] output_array;
           plot_phase(phase_result, lst_files, config, avg_period,eps_filename);
@@ -241,8 +278,21 @@ int main(int argc, char *argv[])
                 }
             }
           //output
-          std::string const h5_filename = lst_files.path+lst_files.prefix+"_phase.h5";
-          std::string const eps_filename = lst_files.path+lst_files.prefix+"_phase.eps";
+	  std::string postfix = vm["postfix"].as<std::string>();
+	  std::string h5_filename = "";
+	  std::string eps_filename = "";
+	  if (postfix.empty())
+	    {
+	      h5_filename = lst_files.path+lst_files.prefix+"_phase.h5";
+	      eps_filename = lst_files.path+lst_files.prefix+"_phase.eps";
+	    }
+	  else
+	    {
+	      h5_filename = lst_files.path+lst_files.prefix+"_phase_"+postfix+".h5";
+	      eps_filename = lst_files.path+lst_files.prefix+"_phase_"+postfix+".eps";
+	    }
+          //std::string const h5_filename = lst_files.path+lst_files.prefix+"_phase.h5";
+          //std::string const eps_filename = lst_files.path+lst_files.prefix+"_phase.eps";
           save_marray_ull_to_h5(&phase_result,h5_filename,"phase",false);
           delete [] output_array;
           plot_phase(phase_result, lst_files, config, avg_period, eps_filename);
@@ -286,7 +336,14 @@ int main(int argc, char *argv[])
               pulse_result_count[j][i] = result_count[i][j];
             }
         }
-      std::string const h5_filename = lst_files.path+lst_files.prefix+"_pulse.h5";
+      std::string postfix = vm["postfix"].as<std::string>();
+      std::string h5_filename = "";
+      //std::string eps_filename = "";
+      if (postfix.empty())
+	  h5_filename = lst_files.path+lst_files.prefix+"_pulse.h5";
+      else
+	  h5_filename = lst_files.path+lst_files.prefix+"_pulse_"+postfix+".h5";
+      //std::string const h5_filename = lst_files.path+lst_files.prefix+"_pulse.h5";
       save_marray_ull_to_h5(&pulse_result_timestamp,h5_filename,"timestamp",false);
       save_marray_ull_to_h5(&pulse_result_count,h5_filename,"count",true);
     }
