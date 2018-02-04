@@ -51,7 +51,7 @@ void LstReader::pulse_hist(unsigned int const channel, \
       auto clock_it = clock[sw].begin();
       while (data[sw][0].get_timedata() > (clock_it+1)->get_timedata()+clock_delay && (clock_it+1)!=clock[sw].end())
         ++clock_it;
-      for (auto it=data[sw].begin(); it < data[sw].end(); it++) //go over all data
+      for (auto it=data[sw].begin(); it < data[sw].end()-1; it++) //go over all data, except for the last one.
         {
           unsigned long long dt = (it->get_timedata()-(clock_it->get_timedata()+clock_delay));
           if (dt >= pulse_tstart && dt < pulse_tend)
