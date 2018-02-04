@@ -75,6 +75,11 @@ void plot_phase(boost::multi_array<T, 2>& data, FILES& lst_files, CONFIG& config
   gp.send2d(big_time_result_v);
 }
 
+// std::string generate_file_name()
+// {
+
+// }
+
 int main(int argc, char *argv[])
 {
   po::variables_map vm = parse_option(argc,argv);

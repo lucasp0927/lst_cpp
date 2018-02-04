@@ -25,6 +25,9 @@ READ_LST_OBJ = $(patsubst %,$(ODIR)/%,$(_READ_LST_OBJ))
 _PRINT_HEADER_OBJ = print_header.o LstReader.o big_time.o phase.o pulse.o select.o Count.o
 PRINT_HEADER_OBJ = $(patsubst %,$(ODIR)/%,$(_PRINT_HEADER_OBJ))
 
+_REMOVE_ZERO_OBJ = remove_zero.o LstReader.o big_time.o phase.o pulse.o select.o Count.o
+REMOVE_ZERO_OBJ = $(patsubst %,$(ODIR)/%,$(_REMOVE_ZERO_OBJ))
+
 $(ODIR)/%.o: %.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
@@ -32,6 +35,9 @@ read_lst: $(READ_LST_OBJ)
 	$(CC) -o $(BDIR)/$@ $^ $(CFLAGS) $(LIBS)
 
 print_header: $(PRINT_HEADER_OBJ)
+	$(CC) -o $(BDIR)/$@ $^ $(CFLAGS) $(LIBS)
+
+remove_zero: $(REMOVE_ZERO_OBJ)
 	$(CC) -o $(BDIR)/$@ $^ $(CFLAGS) $(LIBS)
 
 .PHONY: clean
