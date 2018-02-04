@@ -46,12 +46,13 @@ void LstReader::pulse_hist(unsigned int const channel, \
   #pragma omp parallel for
   for (unsigned int sw = 0; sw < sw_preset; ++sw)
     {
+      std::cout << sw <<": " << data[sw].size() << std::endl;
       if (data[sw].size() == 0 || clock[sw].size() <2)
         continue; //TODO continue or break?
       auto clock_it = clock[sw].begin();
       while (data[sw][0].get_timedata() > (clock_it+1)->get_timedata()+clock_delay && (clock_it+1)!=clock[sw].end())
         ++clock_it;
-      for (auto it=data[sw].begin(); it < data[sw].end(); it++) //go over all data
+      for (auto it=data[sw].begin(); it < data[sw].end()-1; it++) //go over all data
         {
           unsigned long long dt = (it->get_timedata()-(clock_it->get_timedata()+clock_delay));
           if (dt >= pulse_tstart && dt < pulse_tend)
