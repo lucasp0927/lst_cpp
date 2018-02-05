@@ -46,6 +46,7 @@ void LstReader::pulse_hist(unsigned int const channel, \
   #pragma omp parallel for
   for (unsigned int sw = 0; sw < sw_preset; ++sw)
     {
+      std::cout << sw << ": " << data[sw].size() << ", " << clock[sw].size() << std::endl;
       if (data[sw].size() == 0 || clock[sw].size() <2)
         continue; //TODO continue or break?
       auto clock_it = clock[sw].begin();
@@ -63,9 +64,11 @@ void LstReader::pulse_hist(unsigned int const channel, \
           while ((it+1)->get_timedata() >= (clock_it+1)->get_timedata()+clock_delay)
             {
               ++clock_it;
-              if(clock_it == clock[sw].end())
-                break;
+              if(clock_it+1 == clock[sw].end())
+               break;
             }
+          if(clock_it+1 == clock[sw].end())
+            break;
         }
     }
 }
