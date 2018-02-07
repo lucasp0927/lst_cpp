@@ -34,7 +34,6 @@ std::ifstream& GotoLine(std::ifstream& file, unsigned int num){
 LstReader::LstReader(std::string filename):filename(filename)
 {
   buffer = nullptr;
-  //std::cout << "reading file: "<< filename << std::endl;
   std::ifstream file;
   file.open(filename);
   assert(file.is_open());
@@ -80,7 +79,8 @@ LstReader::LstReader(std::string filename):filename(filename)
 
 LstReader::~LstReader()
 {
-  delete[] buffer;
+  if (buffer != nullptr)
+    delete[] buffer;
 }
 
 void LstReader::prepare()
@@ -105,6 +105,7 @@ void LstReader::read_file()
   fileb.seekg(pos);
 
   length = length-pos; //length of data in byte
+  std::cout << "data size: " << length << " Bytes." << std::endl;
   assert(length%dlen == 0);
   total_data_count = (unsigned long long)length/dlen;
   assert(buffer == nullptr);
@@ -190,7 +191,10 @@ void LstReader::decode_counts()
 {
   std::cout << "start decoding..." << std::endl;
   counts.clear();
-  std::vector<Count> temp;
+  assert(counts.size() == 0);
+  //std::vector<Count> temp(nonzero_data_count);
+  counts.resize(nonzero_data_count);
+  int data_counter = 0;
   for (unsigned long long i=0; i < total_data_count; ++i)
     {
       char test = 0x00;
@@ -201,9 +205,14 @@ void LstReader::decode_counts()
       if (test != 0x00)
         {
           Count c(buffer+i*dlen,time_patch);
-          temp.push_back(c);
+          counts[data_counter] = c;
+          data_counter++;
+          //temp.push_back(c);
         }
     }
+  delete [] buffer;
+  buffer = nullptr;
+
   std::cout << "remove out of range data" << std::endl;
   std::vector<Count> select_sw;
   select_sweep(select_sw, temp, 1, sw_preset);
@@ -211,6 +220,7 @@ void LstReader::decode_counts()
   select_channel(select_sw_ch, select_sw, 1, 6);
   //counts.resize(select_sw_ch.size());
   select_timedata(counts, select_sw_ch, 0ULL, timedata_limit);
+
   std::cout << "done decoding." << std::endl;
 }
 
