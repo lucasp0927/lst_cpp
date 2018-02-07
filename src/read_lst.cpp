@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
 {
   po::variables_map vm = parse_option(argc,argv);
   int const omp_thread_num = vm["process"].as<int>();
+  COMBINE_FILES c_lst_files;
   FILES lst_files;
   CONFIG config;
   //Convert
@@ -96,6 +97,14 @@ int main(int argc, char *argv[])
       std::cout << "path: " << lst_files.path << std::endl;
       std::cout << "file(s) found: " << lst_files.file_num << std::endl;
       for (auto it = lst_files.files.begin(); it != lst_files.files.end(); it++)
+        std::cout << *it << std::endl;
+    }
+  if (vm.count("combine"))
+    {
+      auto files = vm["combine"].as<std::vector<std::string>>();
+      if (not check_combine_files_format(files,&c_lst_files))
+        exit(EXIT_FAILURE);
+      for (auto it = c_lst_files.files.begin(); it != c_lst_files.files.end(); it++)
         std::cout << *it << std::endl;
     }
   if (vm.count("config"))
@@ -302,6 +311,52 @@ int main(int argc, char *argv[])
           delete [] output_array;
           plot_phase(phase_result, lst_files, config, avg_period, eps_filename);
         }
+    }
+  if (vm.count("pulse") && vm.count("combine"))
+    {
+      unsigned int const file_num = c_lst_files.files.size();
+      std::string const output_filename = vm["combineoutput"].as<std::string>();
+      unsigned long long tstart = (unsigned long long)config.pulse.tstart;
+      unsigned long long tend = (unsigned long long)config.pulse.tend;
+      unsigned long pulse_tstart = (unsigned long)config.pulse.pulse_tstart;
+      unsigned long pulse_tend = (unsigned long)config.pulse.pulse_tend;
+      long clock_delay = (long)config.pulse.clock_delay;
+      std::vector<int> const channels = config.pulse.channels;
+      std::vector<std::vector<unsigned long>> result_timestamp(c_lst_files.files.size());
+      std::vector<std::vector<unsigned long>> result_count(c_lst_files.files.size());
+      for (int i = 0; i<c_lst_files.files.size(); i++)
+        {
+          std::string const filename = c_lst_files.files[i];
+          LstReader reader(filename);
+          reader.decode_counts();
+          for (auto it=channels.begin();it!=channels.end();it++)
+            {
+              reader.pulse_hist(*it, tstart, tend, pulse_tstart, pulse_tend,\
+                                result_timestamp[i], result_count[i], 3, clock_delay, omp_thread_num);
+            }
+        }
+      //sum result
+      typedef boost::multi_array<unsigned long long, 2> array_type;
+      int timestamp_size = result_timestamp[0].size();
+      array_type pulse_result_timestamp(boost::extents[timestamp_size][1]);
+      array_type pulse_result_count(boost::extents[timestamp_size][1]);
+      for (int i = 0; i<timestamp_size; i++)
+        {
+          pulse_result_timestamp[i][0] = 0;
+          pulse_result_count[i][0] = 0;
+        }
+      for (int i = 0; i<file_num; i++)
+        {
+          for (int j = 0; j<timestamp_size; j++)
+            {
+              pulse_result_timestamp[j][0] += result_timestamp[i][j];
+              pulse_result_count[j][0] += result_count[i][j];
+            }
+        }
+      std::string h5_filename = "";
+      save_marray_ull_to_h5(&pulse_result_timestamp,output_filename,"timestamp",false);
+      save_marray_ull_to_h5(&pulse_result_count,output_filename,"count",true);
+
     }
   if (vm.count("pulse") && vm.count("prefix"))
     {

@@ -10,6 +10,13 @@ std::string extract_file_path(std::string const & fullPath)
   const size_t lastSlashIndex = fullPath.find_last_of("/\\");
   return fullPath.substr(0,lastSlashIndex+1);
 }
+bool check_combine_files_format(std::vector<std::string> const & files,COMBINE_FILES* const c_lst_files)
+{
+  c_lst_files->files = files;
+  //check files exist
+  //parse file path
+  return true;
+}
 
 bool check_files_format(std::string const pattern, FILES* const lst_files)
 {

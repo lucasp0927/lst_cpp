@@ -25,10 +25,12 @@ po::variables_map parse_option(int const argc, char* const argv[])
   po::options_description cmdline_opt{"read_lst options"};
   cmdline_opt.add_options()
     ("help", "produce help message")
-    ("single,S", "process single file")
-    ("inputfile,I", po::value<std::string>(),"Input .lst file") //require single
-    ("outputfile,O", po::value<std::string>(),"Output .h5 file")//require single
+    //("single,S", "process single file")
+    //("inputfile,I", po::value<std::string>(),"Input .lst file") //require single
+    //("outputfile,O", po::value<std::string>(),"Output .h5 file")//require single
     ("prefix", po::value<std::string>(), "batch process prefix")
+    ("combine", po::value<std::vector<std::string>>()->multitoken(), "Only for pulse.")
+    ("combineoutput",po::value<std::string>(), "Output filename after combining data.")
     ("postfix", po::value<std::string>()->default_value(""), "output files postfix")
     ("process,P",po::value<int>()->default_value(1),"multi-thread thread number")
     ("config,C", po::value<std::string>(), "config file for bigtime, phase ans pulse")
@@ -39,11 +41,13 @@ po::variables_map parse_option(int const argc, char* const argv[])
     ("pulse","pulse data") //both, require config
     ;
   po::store(po::parse_command_line(argc, argv, cmdline_opt), vm);
-  conflicting_options(vm, "single", "prefix");
-  option_dependency(vm, "inputfile", "single");
-  option_dependency(vm, "outputfile", "single");
+  //conflicting_options(vm, "single", "prefix");
+  //option_dependency(vm, "inputfile", "single");
+  //option_dependency(vm, "outputfile", "single");
   option_dependency(vm, "bigtime", "config");
   option_dependency(vm, "phase", "config");
   option_dependency(vm, "pulse", "config");
+  option_dependency(vm, "combine", "pulse");
+  option_dependency(vm, "combine", "combineoutput");
   return vm;
 }

@@ -14,6 +14,11 @@ struct FILES
   std::vector<std::string> files;
 };
 
+struct COMBINE_FILES
+{
+  std::vector<std::string> files;
+};
+
 struct CONFIG
 {
   std::vector<double> detuning;
@@ -54,6 +59,7 @@ struct CONFIG
 
 std::string extract_file_name(std::string const & fullPath);
 std::string extract_file_path(std::string const & fullPath);
+bool check_combine_files_format(std::vector<std::string> const & files,COMBINE_FILES* const c_lst_files);
 bool check_files_format(std::string const pattern, FILES* const lst_files);
 void save_marray_d_to_h5(boost::multi_array<double,2> const* const data, \
                            std::string const filename,\

@@ -19,7 +19,7 @@ unsigned int time_patch_dlen(const std::string& time_patch)
   else if (time_patch.compare("f3")==0)
     dlen = 8;
   else
-    std::cout << "wrong time_patch." << std::endl;
+    throw std::runtime_error("Unkown time_patch.");
   return dlen;
 }
 
@@ -191,9 +191,9 @@ void LstReader::decode_counts()
 {
   std::cout << "start decoding..." << std::endl;
   counts.clear();
-  assert(counts.size() == 0);
-  //std::vector<Count> temp(nonzero_data_count);
-  counts.resize(nonzero_data_count);
+  //assert(counts.size() == 0);
+  std::vector<Count> temp(nonzero_data_count);
+  //counts.resize(nonzero_data_count);
   int data_counter = 0;
   for (unsigned long long i=0; i < total_data_count; ++i)
     {
@@ -205,7 +205,7 @@ void LstReader::decode_counts()
       if (test != 0x00)
         {
           Count c(buffer+i*dlen,time_patch);
-          counts[data_counter] = c;
+          temp[data_counter] = c;
           data_counter++;
           //temp.push_back(c);
         }
