@@ -342,16 +342,13 @@ int main(int argc, char *argv[])
       array_type pulse_result_count(boost::extents[timestamp_size][1]);
       for (int i = 0; i<timestamp_size; i++)
         {
-          pulse_result_timestamp[i][0] = 0;
+          pulse_result_timestamp[i][0] = result_timestamp[0][i];
           pulse_result_count[i][0] = 0;
         }
       for (int i = 0; i<file_num; i++)
         {
           for (int j = 0; j<timestamp_size; j++)
-            {
-              pulse_result_timestamp[j][0] += result_timestamp[i][j];
               pulse_result_count[j][0] += result_count[i][j];
-            }
         }
       std::string h5_filename = "";
       save_marray_ull_to_h5(&pulse_result_timestamp,output_filename,"timestamp",false);
