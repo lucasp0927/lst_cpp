@@ -34,11 +34,12 @@ po::variables_map parse_option(int const argc, char* const argv[])
     ("postfix", po::value<std::string>()->default_value(""), "output files postfix")
     ("process,P",po::value<int>()->default_value(1),"multi-thread thread number")
     ("config,C", po::value<std::string>(), "config file for bigtime, phase ans pulse")
-    ("convert","convert to h5 files") //require prefix
+    ("convert","convert to h5 files.") //require prefix
     /*("removezero","remove zeros") //require prefix*/
-    ("bigtime","output bigtime result") //both, require config
-    ("phase","output phase result") //both, require config
-    ("pulse","pulse data") //both, require config
+    ("bigtime","output bigtime result.") //both, require config
+    ("phase","output phase result.") //both, require config
+    ("pulse","pulse data.") //both, require config
+    ("g2", "calculate photon statistics.")
     ;
   po::store(po::parse_command_line(argc, argv, cmdline_opt), vm);
   //conflicting_options(vm, "single", "prefix");
@@ -47,7 +48,7 @@ po::variables_map parse_option(int const argc, char* const argv[])
   option_dependency(vm, "bigtime", "config");
   option_dependency(vm, "phase", "config");
   option_dependency(vm, "pulse", "config");
-  option_dependency(vm, "combine", "pulse");
+  //option_dependency(vm, "combine", "pulse");
   option_dependency(vm, "combine", "combineoutput");
   return vm;
 }

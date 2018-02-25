@@ -404,5 +404,9 @@ int main(int argc, char *argv[])
       save_marray_ull_to_h5(&pulse_result_timestamp,h5_filename,"timestamp",false);
       save_marray_ull_to_h5(&pulse_result_count,h5_filename,"count",true);
     }
+  if (vm.count("g2") && vm.count("combine"))
+    {
+      std::cout << "calculate g2..." << std::endl;
+    }
   return 0;
 }
