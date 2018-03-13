@@ -215,18 +215,19 @@ void LstReader::decode_counts()
   delete [] buffer;
   buffer = nullptr;
 
-  std::cout << "remove out of range data" << std::endl;
-  std::vector<Count> select_sw;
-  select_sweep(select_sw, temp, 1, buffer_sw_preset);
-  std::vector<Count> select_sw_ch;
-  select_channel(select_sw_ch, select_sw, 1, 6);
-  std::vector<Count> counts_buffer;
-  select_timedata(counts_buffer, select_sw_ch, 0ULL, timedata_limit);
+  // std::cout << "remove out of range data" << std::endl;
+  // std::vector<Count> select_sw;
+  // select_sweep(select_sw, temp, 1, buffer_sw_preset);
+  // std::vector<Count> select_sw_ch;
+  // select_channel(select_sw_ch, select_sw, 1, 6);
+  // std::vector<Count> counts_buffer;
+  // select_timedata(counts_buffer, select_sw_ch, 0ULL, timedata_limit);
   //combine
   unsigned int sw_preset_ = sw_preset;
-  std::for_each(counts_buffer.begin(),counts_buffer.end(),[sw_preset_](Count &c){c.increase_sweep(sw_preset_);});
+  std::for_each(temp.begin(),temp.end(),[sw_preset_](Count &c){c.increase_sweep(sw_preset_);});
   sw_preset += buffer_sw_preset;
-  counts.insert( counts.end(), counts_buffer.begin(), counts_buffer.end());
+  counts.insert( counts.end(), temp.begin(), temp.end());
+  temp.clear();
   //std::cout<< "counts size: "<< counts.size() << std::endl;
   std::cout << "done decoding." << std::endl;
 }
