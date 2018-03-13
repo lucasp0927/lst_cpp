@@ -322,8 +322,42 @@ int main(int argc, char *argv[])
       unsigned long pulse_tend = (unsigned long)config.pulse.pulse_tend;
       long clock_delay = (long)config.pulse.clock_delay;
       std::vector<int> const channels = config.pulse.channels;
-      std::vector<std::vector<unsigned long>> result_timestamp(c_lst_files.files.size());
-      std::vector<std::vector<unsigned long>> result_count(c_lst_files.files.size());
+      std::vector<std::vector<unsigned long>> result_timestamp(1);
+      std::vector<std::vector<unsigned long>> result_count(1);
+      LstReader reader(c_lst_files.files[0]);
+      reader.decode_counts();
+      for (int i = 1; i<file_num; i++)
+	{
+          std::string const filename = c_lst_files.files[i];
+	  reader.read_additional_file(filename);
+	}
+      for (auto it=channels.begin();it!=channels.end();it++)
+	{
+	  reader.pulse_hist(*it, tstart, tend, pulse_tstart, pulse_tend, \
+			    result_timestamp[0], result_count[0], 3, clock_delay, omp_thread_num);
+	}
+      //save file
+      typedef boost::multi_array<unsigned long long, 2> array_type;
+      int timestamp_size = result_timestamp[0].size();
+      array_type pulse_result_timestamp(boost::extents[timestamp_size][1]);
+      array_type pulse_result_count(boost::extents[timestamp_size][1]);
+      for (int j = 0; j<timestamp_size; j++)
+	{
+	  pulse_result_timestamp[j][0] = result_timestamp[0][j];
+	  pulse_result_count[j][0] = result_count[0][j];
+	}
+
+      //std::string postfix = vm["postfix"].as<std::string>();
+      //std::string h5_filename = "";
+      //std::string eps_filename = "";
+      // if (postfix.empty())
+      // 	  h5_filename = lst_files.path+lst_files.prefix+"_pulse.h5";
+      // else
+      // 	  h5_filename = lst_files.path+lst_files.prefix+"_pulse_"+postfix+".h5";
+      //std::string const h5_filename = lst_files.path+lst_files.prefix+"_pulse.h5";
+      save_marray_ull_to_h5(&pulse_result_timestamp,output_filename,"timestamp",false);
+      save_marray_ull_to_h5(&pulse_result_count,output_filename,"count",true);
+      /*
       for (int i = 0; i<c_lst_files.files.size(); i++)
         {
           std::string const filename = c_lst_files.files[i];
@@ -350,10 +384,9 @@ int main(int argc, char *argv[])
           for (int j = 0; j<timestamp_size; j++)
               pulse_result_count[j][0] += result_count[i][j];
         }
-      std::string h5_filename = "";
       save_marray_ull_to_h5(&pulse_result_timestamp,output_filename,"timestamp",false);
       save_marray_ull_to_h5(&pulse_result_count,output_filename,"count",true);
-
+      */
     }
   if (vm.count("pulse") && vm.count("prefix"))
     {

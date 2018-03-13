@@ -11,6 +11,7 @@ void LstReader::pulse_hist(unsigned int const channel, \
                            int const thread_num) const
 {
   assert(tend > tstart);
+  assert(clock_delay%RESOLUTION == 0);
   //result.resize();
   std::vector<std::vector<Count>> clock(sw_preset);
   std::vector<std::vector<Count>> data(sw_preset);
@@ -21,7 +22,7 @@ void LstReader::pulse_hist(unsigned int const channel, \
   */
 
   result_timestamp.clear();
-  unsigned long pt = (unsigned long) ceil(pulse_tstart/RESOLUTION)*RESOLUTION;
+  unsigned long const pt = (unsigned long) ceil(pulse_tstart/RESOLUTION)*RESOLUTION;
   for (unsigned long t = pt; t <= pulse_tend; t += RESOLUTION)
       result_timestamp.push_back(t);
   result_count.resize(result_timestamp.size());
@@ -42,6 +43,18 @@ void LstReader::pulse_hist(unsigned int const channel, \
       //data[sweep-1].resize(data_tot.size());
       select_sweep(data[sweep-1],data_tot,sweep);
     }
+  //calculate avg clock period
+  std::vector<unsigned long> periods(sw_preset);
+  std::vector<unsigned long> period_count(sw_preset);
+  for (unsigned int sweep = 1; sweep <= sw_preset; ++sweep)
+    {
+      period_count[sweep-1] = (unsigned long) clock[sweep-1].size()-1;
+      periods[sweep-1] = (unsigned long)calculate_lattice_period(clock[sweep-1]);
+    }
+  unsigned long avg_period = period_combined_average(period_count,periods);
+  avg_period = round(avg_period/RESOLUTION)*RESOLUTION;
+  std::cout << "average period: " << avg_period/1e6 << "us" << std::endl;
+
   std::vector<std::vector<unsigned long>> delta_t(sw_preset);
   #pragma omp parallel for
   for (unsigned int sw = 0; sw < sw_preset; ++sw)

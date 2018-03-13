@@ -19,6 +19,7 @@ public:
   unsigned long long get_timedata() const {return timedata*RESOLUTION;}
   unsigned long long get_timedata_d_res() const {return timedata*RESOLUTION;}
   unsigned int get_sweep() const {return sweep;}
+  void increase_sweep(unsigned int inc); 
   Count(){};
   Count(char* data, const std::string& time_patch);
   virtual ~Count()=default;

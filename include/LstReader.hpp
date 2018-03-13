@@ -35,17 +35,18 @@ struct compare_timedata //use in bigtime
 class LstReader
 {
 private:
-  const std::string filename;
+  std::string filename;
   std::string time_patch;
   unsigned int bit_shift;
+  unsigned int buffer_sw_preset;
   unsigned int sw_preset;
   unsigned int range;
   unsigned int cycles;
   unsigned int dlen;
   unsigned long bin_width;
   unsigned long long timedata_limit;
-  unsigned long long total_data_count;
-  unsigned long nonzero_data_count;
+  unsigned long long buffer_total_data_count;
+  unsigned long buffer_nonzero_data_count;
   char* buffer;
   std::vector<Count> counts;
 public:
@@ -57,6 +58,7 @@ public:
   void iterate_data();
   void save_non_zero_counts(const std::string& out_filename) const;
   void decode_counts();
+  void read_additional_file(const std::string filename_);
   void save_counts_to_h5(std::string const filename, std::string const datasetname, bool const append);
   void save_marray_ull_to_h5(boost::multi_array<unsigned long long,2> const* const data,\
                              std::string const filename,\

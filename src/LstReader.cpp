@@ -33,6 +33,7 @@ std::ifstream& GotoLine(std::ifstream& file, unsigned int num){
 
 LstReader::LstReader(std::string filename):filename(filename)
 {
+  sw_preset = 0;
   buffer = nullptr;
   std::ifstream file;
   file.open(filename);
@@ -54,7 +55,7 @@ LstReader::LstReader(std::string filename):filename(filename)
       GotoLine(file,6);
       getline(file,line);
       assert(line.find("swpreset")==0);
-      sw_preset = std::stoi(line.substr(9,5));
+      buffer_sw_preset = std::stoi(line.substr(9,5));
       //range
       GotoLine(file,2);
       getline(file,line);
@@ -107,7 +108,7 @@ void LstReader::read_file()
   length = length-pos; //length of data in byte
   std::cout << "data size: " << length << " Bytes." << std::endl;
   assert(length%dlen == 0);
-  total_data_count = (unsigned long long)length/dlen;
+  buffer_total_data_count = (unsigned long long)length/dlen;
   assert(buffer == nullptr);
   buffer = new char[length];
   fileb.read(buffer,length);
@@ -117,22 +118,23 @@ void LstReader::read_file()
 void LstReader::print_header() const
 {
   std::cout << "------------------------------------------" << std::endl;
+  std::cout << "filename: " << filename << std::endl;
   std::cout << "time_patch: " << time_patch << std::endl;
   std::cout << "bitshift: "<< bit_shift << std::endl;
-  std::cout << "sw_preset: "<< sw_preset << std::endl;
+  std::cout << "sw_preset: "<< buffer_sw_preset << std::endl;
   std::cout << "range: "<< range << std::endl;
   std::cout << "cycles: "<< cycles << std::endl;
   std::cout << "bin width: " << bin_width << "ps" << std::endl;
   std::cout << "timedata limit: " << timedata_limit/(1E9) << "ms" << std::endl;
-  std::cout <<"total data counts: " << total_data_count << std::endl;
-  std::cout<<"non-zero count: " << nonzero_data_count << std::endl;
+  std::cout <<"total data counts: " << buffer_total_data_count << std::endl;
+  std::cout<<"non-zero count: " << buffer_nonzero_data_count << std::endl;
   std::cout << "------------------------------------------" << std::endl;
 }
 
 void LstReader::iterate_data()
 {
-  nonzero_data_count = 0;
-  for (unsigned long long i=0; i < total_data_count; ++i)
+  buffer_nonzero_data_count = 0;
+  for (unsigned long long i=0; i < buffer_total_data_count; ++i)
     {
       char test = 0x00;
       for (unsigned long long j = i*dlen; j < (i+1)*dlen; ++j)
@@ -140,7 +142,7 @@ void LstReader::iterate_data()
           test |= buffer[j];
         }
       if (test != 0x00)
-        nonzero_data_count++;
+        buffer_nonzero_data_count++;
     }
 }
 
@@ -163,9 +165,9 @@ void LstReader::save_non_zero_counts(const std::string& out_filename) const
   ofile.close();
   ofile.open(out_filename, std::ios::binary | std::ios::app);
   //write nonzero data
-  char* out_buffer = new char[nonzero_data_count*dlen];
+  char* out_buffer = new char[buffer_nonzero_data_count*dlen];
   unsigned long long out_idx = 0;
-  for (unsigned long long i=0; i < total_data_count; ++i)
+  for (unsigned long long i=0; i < buffer_total_data_count; ++i)
     {
       char test = 0x00;
       for (unsigned long long j = i*dlen; j < (i+1)*dlen; ++j)
@@ -182,7 +184,7 @@ void LstReader::save_non_zero_counts(const std::string& out_filename) const
           out_idx += dlen;
         }
     }
-  ofile.write(out_buffer,nonzero_data_count*dlen);
+  ofile.write(out_buffer,buffer_nonzero_data_count*dlen);
   delete [] out_buffer;
   ofile.close();
 }
@@ -190,12 +192,12 @@ void LstReader::save_non_zero_counts(const std::string& out_filename) const
 void LstReader::decode_counts()
 {
   std::cout << "start decoding..." << std::endl;
-  counts.clear();
+  //counts.clear();
   //assert(counts.size() == 0);
-  std::vector<Count> temp(nonzero_data_count);
-  //counts.resize(nonzero_data_count);
+  std::vector<Count> temp(buffer_nonzero_data_count);
+  //counts.resize(buffer_nonzero_data_count);
   int data_counter = 0;
-  for (unsigned long long i=0; i < total_data_count; ++i)
+  for (unsigned long long i=0; i < buffer_total_data_count; ++i)
     {
       char test = 0x00;
       for (unsigned long long j = i*dlen; j < (i+1)*dlen; ++j)
@@ -215,13 +217,63 @@ void LstReader::decode_counts()
 
   std::cout << "remove out of range data" << std::endl;
   std::vector<Count> select_sw;
-  select_sweep(select_sw, temp, 1, sw_preset);
+  select_sweep(select_sw, temp, 1, buffer_sw_preset);
   std::vector<Count> select_sw_ch;
   select_channel(select_sw_ch, select_sw, 1, 6);
-  //counts.resize(select_sw_ch.size());
-  select_timedata(counts, select_sw_ch, 0ULL, timedata_limit);
-
+  std::vector<Count> counts_buffer;
+  select_timedata(counts_buffer, select_sw_ch, 0ULL, timedata_limit);
+  //combine
+  unsigned int sw_preset_ = sw_preset;
+  std::for_each(counts_buffer.begin(),counts_buffer.end(),[sw_preset_](Count &c){c.increase_sweep(sw_preset_);});
+  sw_preset += buffer_sw_preset;
+  counts.insert( counts.end(), counts_buffer.begin(), counts_buffer.end());
+  //std::cout<< "counts size: "<< counts.size() << std::endl;
   std::cout << "done decoding." << std::endl;
+}
+
+void LstReader::read_additional_file(const std::string filename_)
+{
+  filename = filename_;
+  assert(buffer==nullptr);
+  std::ifstream file;
+  file.open(filename);
+  assert(file.is_open());
+  if (file.is_open())
+    {
+      std::string line;
+      //time_patch
+      GotoLine(file,132);
+      getline(file,line);
+      assert(line.find("time_patch")==0);
+      assert(time_patch == line.substr(11,2));
+      //bit shift
+      GotoLine(file,35);
+      getline(file,line);
+      assert(line.find("bitshift")==0);
+      assert(bit_shift == std::stoi("0x"+line.substr(9,1),0,16));
+      //swpreset
+      //GotoLine(file,6);
+      //getline(file,line);
+      //assert(line.find("swpreset")==0);
+      //assert(sw_preset == std::stoi(line.substr(9,5)));
+      //range
+      GotoLine(file,2);
+      getline(file,line);
+      assert(line.find("range")==0);
+      auto range_l = line.length()-6;
+      assert(range == std::stoi(line.substr(6,range_l)));
+      //cycles
+      GotoLine(file,11);
+      getline(file,line);
+      assert(line.find("cycles")==0);
+      auto cycles_l = line.length()-7;
+      assert(cycles == std::stoi(line.substr(7,cycles_l)));
+    }
+  file.close();
+  read_file();
+  iterate_data();
+  print_header();
+  decode_counts();
 }
 
 void LstReader::save_counts_to_h5(std::string const filename, std::string const datasetname, bool const append)

@@ -118,3 +118,8 @@ Count::Count(char* data, const std::string& time_patch)
     //timedata *= RESOLUTION;
   }
 }
+
+void Count::increase_sweep(unsigned int inc)
+{
+  sweep += inc;
+}
