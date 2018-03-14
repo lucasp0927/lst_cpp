@@ -11,7 +11,6 @@ void LstReader::pulse_hist(unsigned int const channel, \
                            int const thread_num) const
 {
   assert(tend > tstart);
-  assert(clock_delay%RESOLUTION == 0);
   //result.resize();
   std::vector<std::vector<Count>> clock(sw_preset);
   std::vector<std::vector<Count>> data(sw_preset);
@@ -22,7 +21,7 @@ void LstReader::pulse_hist(unsigned int const channel, \
   */
 
   result_timestamp.clear();
-  unsigned long const pt = (unsigned long) ceil(pulse_tstart/RESOLUTION)*RESOLUTION;
+  unsigned long pt = (unsigned long) ceil(pulse_tstart/RESOLUTION)*RESOLUTION;
   for (unsigned long t = pt; t <= pulse_tend; t += RESOLUTION)
       result_timestamp.push_back(t);
   result_count.resize(result_timestamp.size());
@@ -43,44 +42,61 @@ void LstReader::pulse_hist(unsigned int const channel, \
       //data[sweep-1].resize(data_tot.size());
       select_sweep(data[sweep-1],data_tot,sweep);
     }
-  //calculate avg clock period
-  std::vector<unsigned long> periods(sw_preset);
-  std::vector<unsigned long> period_count(sw_preset);
-  for (unsigned int sweep = 1; sweep <= sw_preset; ++sweep)
-    {
-      period_count[sweep-1] = (unsigned long) clock[sweep-1].size()-1;
-      periods[sweep-1] = (unsigned long)calculate_lattice_period(clock[sweep-1]);
-    }
-  unsigned long avg_period = period_combined_average(period_count,periods);
-  avg_period = round(avg_period/RESOLUTION)*RESOLUTION;
-  std::cout << "average period: " << avg_period/1e6 << "us" << std::endl;
-
   std::vector<std::vector<unsigned long>> delta_t(sw_preset);
   #pragma omp parallel for
   for (unsigned int sw = 0; sw < sw_preset; ++sw)
     {
       if (data[sw].size() == 0 || clock[sw].size() <2)
         continue; //TODO continue or break?
-      auto clock_it = clock[sw].begin();
-      while (data[sw][0].get_timedata() > (clock_it+1)->get_timedata()+clock_delay && (clock_it+1)!=clock[sw].end())
-        ++clock_it;
-      for (auto it=data[sw].begin(); it < data[sw].end()-1; it++) //go over all data, except for the last one.
-        {
-          unsigned long long dt = (it->get_timedata()-(clock_it->get_timedata()+clock_delay));
-          if (dt >= pulse_tstart && dt < pulse_tend)
-            {
-              assert((dt-pt)%RESOLUTION==0);
-              assert((dt-pt)/RESOLUTION<result_timestamp.size());
-              result_count[(dt-pt)/RESOLUTION]++;
-            }
-          while ((it+1)->get_timedata() >= (clock_it+1)->get_timedata()+clock_delay)
-            {
-              ++clock_it;
-              if(clock_it+1 == clock[sw].end())
-               break;
-            }
-          if(clock_it+1 == clock[sw].end())
-            break;
-        }
+      //auto clock_it = clock[sw].begin();
+      auto data_it = data[sw].begin();
+      for (auto clock_it = clock[sw].begin(); clock_it < clock[sw].end()-1; clock_it++)
+	{
+	  while (data_it->get_timedata() > (clock_it->get_timedata()+clock_delay) && data_it->get_timedata() < ((clock_it+1)->get_timedata()+clock_delay))
+	    {
+	      unsigned long long dt = (data_it->get_timedata()-(clock_it->get_timedata()+clock_delay));
+	      if (dt >= pulse_tstart && dt < pulse_tend)
+		{
+		  assert((dt-pt)%RESOLUTION==0);
+		  assert((dt-pt)/RESOLUTION<result_timestamp.size());
+		  result_count[(dt-pt)/RESOLUTION]++;
+		}
+	      if (data_it == data[sw].end())
+		{
+		  break;
+		}
+	      else
+		data_it++;
+	    }
+	  if (data_it == data[sw].end())
+	    {
+	      break;
+	    }
+	}
+      // while (data[sw][0].get_timedata() > (clock_it+1)->get_timedata()+clock_delay && (clock_it+1)!=clock[sw].end())
+      //   ++clock_it;
+      // for (auto it=data[sw].begin(); it < data[sw].end()-1; it++) //go over all data, except for the last one.
+      //   {
+      //     unsigned long long dt = (it->get_timedata()-(clock_it->get_timedata()+clock_delay));
+      //     if (dt >= pulse_tstart && dt < pulse_tend)
+      //       {
+      //         assert((dt-pt)%RESOLUTION==0);
+      //         assert((dt-pt)/RESOLUTION<result_timestamp.size());
+      //         result_count[(dt-pt)/RESOLUTION]++;
+      //       }
+      //     while ((it+1)->get_timedata() >= (clock_it+1)->get_timedata()+clock_delay)
+      //       {
+      //         ++clock_it;
+      //         if(clock_it+1 == clock[sw].end())
+      // 		{
+      // 		  //process all counts 
+      // 		  break;
+      // 		}
+      //       }
+      //     if(clock_it+1 == clock[sw].end())
+      //       break;
+      //   }
+      //process the last count
+      
     }
 }
