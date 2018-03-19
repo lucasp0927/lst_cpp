@@ -1,3 +1,5 @@
+#ifndef FILEIO_HPP
+#define FILEIO_HPP
 #include <iostream>
 #include <glob.h>
 #include <vector>
@@ -70,3 +72,4 @@ void save_marray_ull_to_h5(boost::multi_array<unsigned long long,2> const* const
                            std::string const datasetname,\
                            bool const append);
 void read_yaml_config(std::string const filename, CONFIG& config);
+#endif

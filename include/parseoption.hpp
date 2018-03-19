@@ -1,3 +1,5 @@
+#ifndef PARSEOPTION_HPP
+#define PARSEOPTION_HPP
 #include <string>
 #include "boost/program_options.hpp"
 namespace po = boost::program_options;
@@ -33,6 +35,7 @@ po::variables_map parse_option(int const argc, char* const argv[])
     ("combineoutput",po::value<std::string>(), "Output filename after combining data.")
     ("postfix", po::value<std::string>()->default_value(""), "output files postfix")
     ("process,P",po::value<int>()->default_value(1),"multi-thread thread number")
+    //("config,C", po::value<std::vector<std::string>>(), "config file for bigtime, phase ans pulse")
     ("config,C", po::value<std::string>(), "config file for bigtime, phase ans pulse")
     ("convert","convert to h5 files.") //require prefix
     /*("removezero","remove zeros") //require prefix*/
@@ -52,3 +55,4 @@ po::variables_map parse_option(int const argc, char* const argv[])
   option_dependency(vm, "combine", "combineoutput");
   return vm;
 }
+#endif
