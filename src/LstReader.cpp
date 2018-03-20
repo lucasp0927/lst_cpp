@@ -228,7 +228,50 @@ void LstReader::decode_counts()
   sw_preset += buffer_sw_preset;
   counts.insert( counts.end(), temp.begin(), temp.end());
   temp.clear();
-  //std::cout<< "counts size: "<< counts.size() << std::endl;
+  std::cout << "done decoding." << std::endl;
+}
+
+void LstReader::decode_counts(unsigned long long tstart, unsigned long long tend)
+{
+  assert(tend > tstart);
+  std::cout << "start decoding..." << std::endl;
+  //counts.clear();
+  //assert(counts.size() == 0);
+  std::vector<Count> temp(buffer_nonzero_data_count);
+  //counts.resize(buffer_nonzero_data_count);
+  int data_counter = 0;
+  for (unsigned long long i=0; i < buffer_total_data_count; ++i)
+    {
+      char test = 0x00;
+      for (unsigned long long j = i*dlen; j < (i+1)*dlen; ++j)
+        {
+          test |= buffer[j];
+        }
+      if (test != 0x00)
+        {
+          Count c(buffer+i*dlen,time_patch);
+          temp[data_counter] = c;
+          data_counter++;
+          //temp.push_back(c);
+        }
+    }
+  delete [] buffer;
+  buffer = nullptr;
+
+  // std::cout << "remove out of range data" << std::endl;
+  // std::vector<Count> select_sw;
+  // select_sweep(select_sw, temp, 1, buffer_sw_preset);
+  // std::vector<Count> select_sw_ch;
+  // select_channel(select_sw_ch, select_sw, 1, 6);
+  std::vector<Count> counts_buffer;
+  select_timedata(counts_buffer, temp, tstart, tend);
+  temp.clear();
+  //combine
+  unsigned int sw_preset_ = sw_preset;
+  std::for_each(counts_buffer.begin(),counts_buffer.end(),[sw_preset_](Count &c){c.increase_sweep(sw_preset_);});
+  sw_preset += buffer_sw_preset;
+  counts.insert( counts.end(), counts_buffer.begin(), counts_buffer.end());
+  counts_buffer.clear();
   std::cout << "done decoding." << std::endl;
 }
 
@@ -274,7 +317,6 @@ void LstReader::read_additional_file(const std::string filename_)
   read_file();
   iterate_data();
   print_header();
-  decode_counts();
 }
 
 void LstReader::save_counts_to_h5(std::string const filename, std::string const datasetname, bool const append)

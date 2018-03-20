@@ -305,12 +305,14 @@ void pulse(po::variables_map& vm, int const omp_thread_num, COMBINE_FILES& c_lst
   std::vector<std::vector<unsigned long>> result_timestamp(1);
   std::vector<std::vector<unsigned long>> result_count(1);
   LstReader reader(c_lst_files.files[0]);
-  reader.decode_counts();
+  reader.decode_counts(tstart, tend);
   for (int i = 1; i<file_num; i++)
     {
       std::string const filename = c_lst_files.files[i];
       reader.read_additional_file(filename);
+      reader.decode_counts(tstart, tend);
     }
+  //TODO: Need to add channel delays.
   for (auto it=channels.begin();it!=channels.end();it++)
     {
       reader.pulse_hist(*it, tstart, tend, pulse_tstart, pulse_tend, \
@@ -326,45 +328,6 @@ void pulse(po::variables_map& vm, int const omp_thread_num, COMBINE_FILES& c_lst
       pulse_result_timestamp[j][0] = result_timestamp[0][j];
       pulse_result_count[j][0] = result_count[0][j];
     }
-
-  //std::string postfix = vm["postfix"].as<std::string>();
-  //std::string h5_filename = "";
-  //std::string eps_filename = "";
-  // if (postfix.empty())
-  // 	  h5_filename = lst_files.path+lst_files.prefix+"_pulse.h5";
-  // else
-  // 	  h5_filename = lst_files.path+lst_files.prefix+"_pulse_"+postfix+".h5";
-  //std::string const h5_filename = lst_files.path+lst_files.prefix+"_pulse.h5";
   save_marray_ull_to_h5(&pulse_result_timestamp,output_filename,"timestamp",false);
   save_marray_ull_to_h5(&pulse_result_count,output_filename,"count",true);
-  /*
-    for (int i = 0; i<c_lst_files.files.size(); i++)
-    {
-    std::string const filename = c_lst_files.files[i];
-    LstReader reader(filename);
-    reader.decode_counts();
-    for (auto it=channels.begin();it!=channels.end();it++)
-    {
-    reader.pulse_hist(*it, tstart, tend, pulse_tstart, pulse_tend,\
-    result_timestamp[i], result_count[i], 3, clock_delay, omp_thread_num);
-    }
-    }
-    //sum result
-    typedef boost::multi_array<unsigned long long, 2> array_type;
-    int timestamp_size = result_timestamp[0].size();
-    array_type pulse_result_timestamp(boost::extents[timestamp_size][1]);
-    array_type pulse_result_count(boost::extents[timestamp_size][1]);
-    for (int i = 0; i<timestamp_size; i++)
-    {
-    pulse_result_timestamp[i][0] = result_timestamp[0][i];
-    pulse_result_count[i][0] = 0;
-    }
-    for (int i = 0; i<file_num; i++)
-    {
-    for (int j = 0; j<timestamp_size; j++)
-    pulse_result_count[j][0] += result_count[i][j];
-    }
-    save_marray_ull_to_h5(&pulse_result_timestamp,output_filename,"timestamp",false);
-    save_marray_ull_to_h5(&pulse_result_count,output_filename,"count",true);
-  */
 }
