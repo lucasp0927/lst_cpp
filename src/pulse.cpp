@@ -7,7 +7,7 @@ void LstReader::pulse_hist(unsigned int const channel, \
                            std::vector<unsigned long>& result_timestamp, \
                            std::vector<unsigned long>& result_count, \
                            unsigned int const clock_ch,\
-			   long const clock_delay,\
+                           long const clock_delay,\
                            int const thread_num) const
 {
   assert(tend > tstart);
@@ -15,15 +15,15 @@ void LstReader::pulse_hist(unsigned int const channel, \
   std::vector<std::vector<Count>> clock(sw_preset);
   std::vector<std::vector<Count>> data(sw_preset);
   /*
-  std::vector<unsigned long> periods(sw_preset);
-  std::vector<unsigned long> period_count(sw_preset);
-  std::vector<unsigned long long> periods_var(sw_preset);
+    std::vector<unsigned long> periods(sw_preset);
+    std::vector<unsigned long> period_count(sw_preset);
+    std::vector<unsigned long long> periods_var(sw_preset);
   */
 
   result_timestamp.clear();
   unsigned long pt = (unsigned long) ceil(pulse_tstart/RESOLUTION)*RESOLUTION;
   for (unsigned long t = pt; t <= pulse_tend; t += RESOLUTION)
-      result_timestamp.push_back(t);
+    result_timestamp.push_back(t);
   result_count.resize(result_timestamp.size());
   for (int i = 0;i < result_timestamp.size();i++)
     result_count[i] = 0;
@@ -35,40 +35,51 @@ void LstReader::pulse_hist(unsigned int const channel, \
   select_channel(data_tot,select_td, channel);
 
   //std::cout << "sort by sweep..." << std::endl;
-  sort_by_sweep(clock_tot);
-  sort_by_sweep(data_tot);
-  //std::cout << "Selecting sweeps..." << std::endl;
-  // omp_set_num_threads(thread_num);
-  // #pragma omp parallel for
-  auto clock_tot_it = clock_tot.begin();
-  auto data_tot_it = data_tot.begin();
-  for (unsigned int sweep = 1; sweep <= sw_preset; ++sweep)
+#pragma omp parallel sections
+  {
+#pragma omp section
     {
-      while (clock_tot_it->get_sweep()==sweep)
-      {
-        clock[sweep-1].push_back(*clock_tot_it);
-	if (clock_tot_it == clock_tot.end())
-	  break;
-        clock_tot_it++;
-      }
-
-      while (data_tot_it->get_sweep()==sweep)
-      {
-        data[sweep-1].push_back(*data_tot_it);
-	if (data_tot_it == data_tot.end())
-	  break;
-        data_tot_it++;
-      }
-      // select_sweep(clock[sweep-1],clock_tot,sweep);
-      // select_sweep(data[sweep-1],data_tot,sweep);
+      sort_by_sweep(clock_tot);
+      auto clock_tot_it = clock_tot.begin();
+      for (unsigned int sweep = 1; sweep <= sw_preset; ++sweep)
+        {
+          while (clock_tot_it->get_sweep()==sweep)
+            {
+              clock[sweep-1].push_back(*clock_tot_it);
+              if (clock_tot_it == clock_tot.end())
+                break;
+              clock_tot_it++;
+            }
+        }
     }
+#pragma omp section
+    {
+      sort_by_sweep(data_tot);
+      //std::cout << "Selecting sweeps..." << std::endl;
+      // omp_set_num_threads(thread_num);
+      // #pragma omp parallel for
+      auto data_tot_it = data_tot.begin();
+      for (unsigned int sweep = 1; sweep <= sw_preset; ++sweep)
+        {
+          while (data_tot_it->get_sweep()==sweep)
+            {
+              data[sweep-1].push_back(*data_tot_it);
+              if (data_tot_it == data_tot.end())
+                break;
+              data_tot_it++;
+            }
+        }
+    }
+  }
+
+#pragma omp parallel for
   for (unsigned int sweep = 1; sweep <= sw_preset; ++sweep)
     {
       sort_by_time(data[sweep-1]);
       sort_by_time(clock[sweep-1]);
     }
   std::vector<std::vector<unsigned long>> delta_t(sw_preset);
-  #pragma omp parallel for
+#pragma omp parallel for
   for (unsigned int sw = 0; sw < sw_preset; ++sw)
     {
       if (data[sw].size() == 0 || clock[sw].size() <2)
@@ -76,52 +87,27 @@ void LstReader::pulse_hist(unsigned int const channel, \
       //auto clock_it = clock[sw].begin();
       auto data_it = data[sw].begin();
       for (auto clock_it = clock[sw].begin(); clock_it < clock[sw].end()-1; clock_it++)
-	{
-	  while (data_it->get_timedata() > (clock_it->get_timedata()+clock_delay) && data_it->get_timedata() < ((clock_it+1)->get_timedata()+clock_delay))
-	    {
-	      unsigned long long dt = (data_it->get_timedata()-(clock_it->get_timedata()+clock_delay));
-	      if (dt >= pulse_tstart && dt < pulse_tend)
-		{
-		  assert((dt-pt)%RESOLUTION==0);
-		  assert((dt-pt)/RESOLUTION<result_timestamp.size());
-		  result_count[(dt-pt)/RESOLUTION]++;
-		}
-	      if (data_it == data[sw].end())
-		{
-		  break;
-		}
-	      else
-		data_it++;
-	    }
-	  if (data_it == data[sw].end())
-	    {
-	      break;
-	    }
-	}
-      // while (data[sw][0].get_timedata() > (clock_it+1)->get_timedata()+clock_delay && (clock_it+1)!=clock[sw].end())
-      //   ++clock_it;
-      // for (auto it=data[sw].begin(); it < data[sw].end()-1; it++) //go over all data, except for the last one.
-      //   {
-      //     unsigned long long dt = (it->get_timedata()-(clock_it->get_timedata()+clock_delay));
-      //     if (dt >= pulse_tstart && dt < pulse_tend)
-      //       {
-      //         assert((dt-pt)%RESOLUTION==0);
-      //         assert((dt-pt)/RESOLUTION<result_timestamp.size());
-      //         result_count[(dt-pt)/RESOLUTION]++;
-      //       }
-      //     while ((it+1)->get_timedata() >= (clock_it+1)->get_timedata()+clock_delay)
-      //       {
-      //         ++clock_it;
-      //         if(clock_it+1 == clock[sw].end())
-      // 		{
-      // 		  //process all counts 
-      // 		  break;
-      // 		}
-      //       }
-      //     if(clock_it+1 == clock[sw].end())
-      //       break;
-      //   }
-      //process the last count
-      
+        {
+          while (data_it->get_timedata() > (clock_it->get_timedata()+clock_delay) && data_it->get_timedata() < ((clock_it+1)->get_timedata()+clock_delay))
+            {
+              unsigned long long dt = (data_it->get_timedata()-(clock_it->get_timedata()+clock_delay));
+              if (dt >= pulse_tstart && dt < pulse_tend)
+                {
+                  assert((dt-pt)%RESOLUTION==0);
+                  assert((dt-pt)/RESOLUTION<result_timestamp.size());
+                  result_count[(dt-pt)/RESOLUTION]++;
+                }
+              if (data_it == data[sw].end())
+                {
+                  break;
+                }
+              else
+                data_it++;
+            }
+          if (data_it == data[sw].end())
+            {
+              break;
+            }
+        }
     }
 }
