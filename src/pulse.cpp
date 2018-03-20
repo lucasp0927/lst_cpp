@@ -34,8 +34,10 @@ void LstReader::pulse_hist(unsigned int const channel, \
   std::vector<Count> data_tot;
   select_channel(data_tot,select_td, channel);
 
+  //std::cout << "sort by sweep..." << std::endl;
   sort_by_sweep(clock_tot);
   sort_by_sweep(data_tot);
+  //std::cout << "Selecting sweeps..." << std::endl;
   // omp_set_num_threads(thread_num);
   // #pragma omp parallel for
   auto clock_tot_it = clock_tot.begin();
@@ -57,8 +59,14 @@ void LstReader::pulse_hist(unsigned int const channel, \
 	  break;
         data_tot_it++;
       }
+      // select_sweep(clock[sweep-1],clock_tot,sweep);
+      // select_sweep(data[sweep-1],data_tot,sweep);
     }
-
+  for (unsigned int sweep = 1; sweep <= sw_preset; ++sweep)
+    {
+      sort_by_time(data[sweep-1]);
+      sort_by_time(clock[sweep-1]);
+    }
   std::vector<std::vector<unsigned long>> delta_t(sw_preset);
   #pragma omp parallel for
   for (unsigned int sw = 0; sw < sw_preset; ++sw)

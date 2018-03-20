@@ -5,6 +5,11 @@ void LstReader::sort_by_sweep(std::vector<Count>& counts) const
   std::sort(counts.begin(),counts.end(),[](Count const& a, Count const& b) {return a.get_sweep() < b.get_sweep();});
 }
 
+void LstReader::sort_by_time(std::vector<Count>& counts) const
+{
+  std::sort(counts.begin(),counts.end(),[](Count const& a, Count const& b) {return a.get_timedata() < b.get_timedata();});
+}
+
 void LstReader::select_sweep(std::vector<Count>& result, std::vector<Count> const& input, unsigned int const sweep) const
 {
   int count = std::count_if(input.begin(), input.end(),[sweep](Count c){return c.get_sweep()==sweep;});

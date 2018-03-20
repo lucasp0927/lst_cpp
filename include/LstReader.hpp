@@ -99,6 +99,7 @@ public:
   //sort and select functions
   ///////////////////
   void sort_by_sweep(std::vector<Count>& counts) const;
+  void sort_by_time(std::vector<Count>& counts) const;
   void select_sweep(std::vector<Count>& result, std::vector<Count> const& input, unsigned int const sweep) const;
   void select_sweep(std::vector<Count>& result, std::vector<Count> const& input, unsigned int const sweep_start, unsigned int const sweep_end) const;
   void select_channel(std::vector<Count>& result, std::vector<Count> const& input, unsigned int const channel) const;
