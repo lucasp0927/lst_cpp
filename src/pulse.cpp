@@ -33,18 +33,33 @@ void LstReader::pulse_hist(unsigned int const channel, \
   select_channel(clock_tot,select_td, clock_ch);
   std::vector<Count> data_tot;
   select_channel(data_tot,select_td, channel);
-  std::cout << "Selecting sweeps..." << std::endl;
-  omp_set_num_threads(thread_num);
-  #pragma omp parallel for
+
+  sort_by_sweep(clock_tot);
+  sort_by_sweep(data_tot);
+  // omp_set_num_threads(thread_num);
+  // #pragma omp parallel for
+  auto clock_tot_it = clock_tot.begin();
+  auto data_tot_it = data_tot.begin();
   for (unsigned int sweep = 1; sweep <= sw_preset; ++sweep)
     {
-      //clock[sweep-1].resize(clock_tot.size());
-      select_sweep(clock[sweep-1],clock_tot,sweep);
-      //data[sweep-1].resize(data_tot.size());
-      select_sweep(data[sweep-1],data_tot,sweep);
+      while (clock_tot_it->get_sweep()==sweep)
+      {
+        clock[sweep-1].push_back(*clock_tot_it);
+	if (clock_tot_it == clock_tot.end())
+	  break;
+        clock_tot_it++;
+      }
+
+      while (data_tot_it->get_sweep()==sweep)
+      {
+        data[sweep-1].push_back(*data_tot_it);
+	if (data_tot_it == data_tot.end())
+	  break;
+        data_tot_it++;
+      }
     }
+
   std::vector<std::vector<unsigned long>> delta_t(sw_preset);
-  std::cout << "Calculating pulse histogram..." << std::endl;
   #pragma omp parallel for
   for (unsigned int sw = 0; sw < sw_preset; ++sw)
     {
