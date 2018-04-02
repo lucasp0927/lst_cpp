@@ -35,6 +35,7 @@ LstReader::LstReader(std::string filename):filename(filename)
 {
   sw_preset = 0;
   buffer = nullptr;
+  histogram.resize(CHANNEL_NUM);
   std::ifstream file;
   file.open(filename);
   assert(file.is_open());
@@ -211,20 +212,14 @@ void LstReader::decode_counts()
           {
               temp[data_counter] = c;
               data_counter++;
+	      for (int i = 0; i<CHANNEL_NUM; i++)
+		histogram[i].resize(sw_preset+buffer_sw_preset);
+	      histogram[c.get_channel()-1][sw_preset+c.get_sweep()-1]++;
           }
-          //temp.push_back(c);
         }
     }
   delete [] buffer;
   buffer = nullptr;
-
-  // std::cout << "remove out of range data" << std::endl;
-  // std::vector<Count> select_sw;
-  // select_sweep(select_sw, temp, 1, buffer_sw_preset);
-  // std::vector<Count> select_sw_ch;
-  // select_channel(select_sw_ch, select_sw, 1, 6);
-  // std::vector<Count> counts_buffer;
-  // select_timedata(counts_buffer, select_sw_ch, 0ULL, timedata_limit);
   //combine
   unsigned int sw_preset_ = sw_preset;
   std::for_each(temp.begin(),temp.end(),[sw_preset_](Count &c){c.increase_sweep(sw_preset_);});
@@ -257,6 +252,9 @@ void LstReader::decode_counts(unsigned long long tstart, unsigned long long tend
             {
               temp[data_counter] = c;
               data_counter++;
+	      for (int i = 0; i<CHANNEL_NUM; i++)
+		histogram[i].resize(sw_preset+buffer_sw_preset);
+	      histogram[c.get_channel()-1][sw_preset+c.get_sweep()-1]++;
             }
           //temp.push_back(c);
         }
@@ -264,11 +262,6 @@ void LstReader::decode_counts(unsigned long long tstart, unsigned long long tend
   delete [] buffer;
   buffer = nullptr;
 
-  // std::cout << "remove out of range data" << std::endl;
-  // std::vector<Count> select_sw;
-  // select_sweep(select_sw, temp, 1, buffer_sw_preset);
-  // std::vector<Count> select_sw_ch;
-  // select_channel(select_sw_ch, select_sw, 1, 6);
   std::vector<Count> counts_buffer;
   select_timedata(counts_buffer, temp, tstart, tend);
   temp.clear();
@@ -404,6 +397,21 @@ void LstReader::save_marray_ull_to_h5(boost::multi_array<unsigned long long,2> c
 
 void LstReader::print_stat()
 {
+  std::cout << "Data Statistics:" << std::endl;
+  //check sweeps with zero counts
+  std::cout << "Sweep preset: " << sw_preset << std::endl;
+  for (int ch=0; ch<CHANNEL_NUM; ch++)
+    {
+      std::cout << "  channel: " << ch << std::endl;
+      int sw_count = 0;
+      for (auto it = histogram[ch].begin(); it != histogram[ch].end(); it++)
+	{
+	  std::cout << sw_count << ": "<< *it << std::endl;
+	  sw_count++;
+	}
+    }
+  //check sweeps with glitched measurement
+  /*
   for (unsigned int ch = 1; ch <= 6; ++ch)
     {
       std::vector<Count> select_ch;
@@ -418,6 +426,7 @@ void LstReader::print_stat()
         }
       select_ch.clear();
     }
+  */
 }
 
 void LstReader::print_ch3_size() const

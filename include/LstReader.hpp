@@ -19,7 +19,7 @@
 #ifdef max
 #undef max
 #endif
-
+const int CHANNEL_NUM = 6; //total 6 channels
 using namespace H5;
 
 unsigned int time_patch_dlen(const std::string& time_patch);
@@ -49,6 +49,7 @@ private:
   unsigned long buffer_nonzero_data_count;
   char* buffer;
   std::vector<Count> counts;
+  std::vector<std::vector<unsigned long>> histogram;
 public:
   LstReader(std::string filename);
   virtual ~LstReader();
