@@ -17,4 +17,5 @@ void bigtime(po::variables_map& vm, int const omp_thread_num, FILES& lst_files, 
 void phase(po::variables_map& vm, int const omp_thread_num, FILES& lst_files, CONFIG& config);
 void pulse(po::variables_map& vm, int const omp_thread_num, FILES& lst_files, CONFIG& config);
 void pulse(po::variables_map& vm, int const omp_thread_num, COMBINE_FILES& c_lst_files, CONFIG& config);
+void g2(po::variables_map& vm, int const omp_thread_num, COMBINE_FILES& c_lst_files, CONFIG& config);
 #endif

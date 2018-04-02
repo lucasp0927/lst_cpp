@@ -16,10 +16,10 @@ ODIR=obj
 LDIR =../lib
 BDIR = ../build
 
-_DEPS = LstReader.hpp Count.hpp
+_DEPS = LstReader.hpp Count.hpp fileio.hpp mainroutine.hpp parseoption.hpp
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_READ_LST_OBJ = read_lst.o LstReader.o big_time.o phase.o pulse.o select.o Count.o fileio.o mainroutine.o
+_READ_LST_OBJ = read_lst.o LstReader.o big_time.o phase.o pulse.o gtwo.o select.o Count.o fileio.o mainroutine.o
 READ_LST_OBJ = $(patsubst %,$(ODIR)/%,$(_READ_LST_OBJ))
 
 _PRINT_HEADER_OBJ = print_header.o LstReader.o big_time.o phase.o pulse.o select.o Count.o

@@ -26,10 +26,10 @@ unsigned int time_patch_dlen(const std::string& time_patch);
 std::ifstream& GotoLine(std::ifstream& file, unsigned int num);
 struct compare_timedata //use in bigtime
 {
-    inline bool operator() (const Count& c1, const Count& c2)
-    {
-      return (c1.get_timedata() < c2.get_timedata());
-    }
+  inline bool operator() (const Count& c1, const Count& c2)
+  {
+    return (c1.get_timedata() < c2.get_timedata());
+  }
 };
 
 class LstReader
@@ -94,7 +94,7 @@ public:
                           unsigned long long const normalize_tstart,  \
                           unsigned long long const normalize_tend,    \
                           double* const output_buffer,
-              int const thread_num) const;
+                          int const thread_num) const;
   ///////////////////
   //sort and select functions
   ///////////////////
@@ -113,7 +113,7 @@ public:
   unsigned long period_combined_average(std::vector<unsigned long> const& period_count,\
                                         std::vector<unsigned long> const& periods)const;
   unsigned long long period_combined_variance(std::vector<unsigned long> const& period_count,\
-                                         std::vector<unsigned long> const& periods,\
+                                              std::vector<unsigned long> const& periods,\
                                               std::vector<unsigned long long> const& periods_var)const;
   ///////////////////
   //phase hist
@@ -128,14 +128,14 @@ public:
 
 
   unsigned long phase_hist_normalize(unsigned int const channel,\
-                            unsigned long long const tstart,\
-                            unsigned long long const tend,\
-                            unsigned int const bin_num,\
-                            unsigned long long const normalize_tstart,\
-                            unsigned long long const normalize_tend,\
-                            double* const result,\
-                            unsigned int const clock_ch,\
-                            int const thread_num) const;
+                                     unsigned long long const tstart,\
+                                     unsigned long long const tend,\
+                                     unsigned int const bin_num,\
+                                     unsigned long long const normalize_tstart,\
+                                     unsigned long long const normalize_tend,\
+                                     double* const result,\
+                                     unsigned int const clock_ch,\
+                                     int const thread_num) const;
   ///////////////////
   //pulse
   ///////////////////
@@ -147,8 +147,24 @@ public:
                   std::vector<unsigned long>& result_timestamp, \
                   std::vector<unsigned long>& result_count, \
                   unsigned int const clock_ch,\
-		  long const clock_delay,\
+                  long const clock_delay,\
                   int const thread_num) const;
+  ///////////////////
+  //g2
+  ///////////////////
+  // result return all the time difference between ch1 ch2 counts.
+  void g2_photon_statistic(std::vector<int> const& channels,    \
+                           unsigned long long const tstart,     \
+                           unsigned long long const tend,       \
+                           unsigned long const pulse_tstart,    \
+                           unsigned long const pulse_tend,      \
+                           std::vector<long>& result,           \
+                           unsigned int const clock_ch,         \
+                           long const channel_delay,            \
+                           int const thread_num)const;
+  ///////////////////
+  //Debug
+  ///////////////////
+  void print_ch3_size() const;
 };
-
 #endif

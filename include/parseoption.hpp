@@ -51,7 +51,9 @@ po::variables_map parse_option(int const argc, char* const argv[])
   option_dependency(vm, "bigtime", "config");
   option_dependency(vm, "phase", "config");
   option_dependency(vm, "pulse", "config");
-  //option_dependency(vm, "combine", "pulse");
+  option_dependency(vm, "g2", "config");
+  option_dependency(vm, "g2", "combine");
+  //option_dependency(vm, "combine", "g2");
   option_dependency(vm, "combine", "combineoutput");
   return vm;
 }

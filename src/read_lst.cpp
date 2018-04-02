@@ -86,6 +86,7 @@ int main(int argc, char *argv[])
   if (vm.count("g2") && vm.count("combine"))
     {
       std::cout << "calculate g2..." << std::endl;
+      g2(vm, omp_thread_num, c_lst_files, config);
     }
   return 0;
 }

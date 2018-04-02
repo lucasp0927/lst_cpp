@@ -207,8 +207,11 @@ void LstReader::decode_counts()
       if (test != 0x00)
         {
           Count c(buffer+i*dlen,time_patch);
-          temp[data_counter] = c;
-          data_counter++;
+          if (c.get_sweep() <= buffer_sw_preset)
+          {
+              temp[data_counter] = c;
+              data_counter++;
+          }
           //temp.push_back(c);
         }
     }
@@ -250,8 +253,11 @@ void LstReader::decode_counts(unsigned long long tstart, unsigned long long tend
       if (test != 0x00)
         {
           Count c(buffer+i*dlen,time_patch);
-          temp[data_counter] = c;
-          data_counter++;
+          if (c.get_sweep() <= buffer_sw_preset)
+            {
+              temp[data_counter] = c;
+              data_counter++;
+            }
           //temp.push_back(c);
         }
     }
@@ -412,4 +418,11 @@ void LstReader::print_stat()
         }
       select_ch.clear();
     }
+}
+
+void LstReader::print_ch3_size() const
+{
+  std::vector<Count> select_ch;
+  select_channel(select_ch, counts, 3);
+  std::cout << "ch3 size:" << select_ch.size() << std::endl;
 }

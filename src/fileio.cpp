@@ -196,6 +196,71 @@ void save_marray_ull_to_h5(boost::multi_array<unsigned long long,2> const* const
     }
 }
 
+template <long unsigned int N>
+void save_marray_l_to_h5(boost::multi_array<long,N> const* const data, \
+                         std::string const filename,                   \
+                         std::string const datasetname,                \
+                         bool const append)
+{
+  const H5std_string FILE_NAME(filename);
+  const H5std_string DATASET_NAME(datasetname);
+  try{
+    std::cout << "writing file: " << filename << std::endl;
+    std::cout << "        dataset: /" << datasetname << std::endl;
+    Exception::dontPrint();
+    int const rank = data->num_dimensions();
+    auto const* const shape = data->shape();
+    H5File* file = nullptr;
+    if (append)
+      file = new H5File( FILE_NAME, H5F_ACC_RDWR );
+    else
+      file = new H5File( FILE_NAME, H5F_ACC_TRUNC );
+    /*
+     * Create property list for a dataset and set up fill values.
+     */
+    long fillvalue = 0;   /* Fill value for the dataset */
+    DSetCreatPropList plist;
+    plist.setFillValue(PredType::NATIVE_LONG, &fillvalue);
+    /*
+     * Create dataspace for the dataset in the file.
+     */
+    hsize_t* const fdim = new hsize_t[rank];
+    for (int i = 0; i < rank; ++i)
+      fdim[i] = (hsize_t) shape[i];
+    DataSpace fspace( rank, fdim );
+    /*
+     * Create dataset and write it into the file.
+     */
+    DataSet* dataset = new DataSet(file->createDataSet(DATASET_NAME,\
+                                                       PredType::NATIVE_ULLONG, fspace, plist));
+
+    /*
+     * Create dataspace for the first dataset.
+     */
+    DataSpace mspace1( rank, fdim );
+    dataset->write( data->data(), PredType::NATIVE_LONG, mspace1, fspace );
+    delete dataset;
+    delete file;
+    delete [] fdim;
+  }
+  catch( FileIException error )
+    {
+      error.printError();
+      exit(EXIT_FAILURE);
+    }
+  catch( DataSetIException error )
+    {
+      error.printError();
+      exit(EXIT_FAILURE);
+    }
+  catch( DataSpaceIException error )
+    {
+      error.printError();
+      exit(EXIT_FAILURE);
+    }
+}
+
+
 void read_yaml_config(std::string const filename, CONFIG& config)
 {
   std::cout << "Parse configure YAML file: "<<filename << std::endl;
@@ -234,4 +299,22 @@ void read_yaml_config(std::string const filename, CONFIG& config)
   config.pulse.clock_delay = (long)(yaml_config["pulse"]["clock_delay"].as<double>()*1e3);
   for(auto it = yaml_config["pulse"]["channels"].begin();it!=yaml_config["pulse"]["channels"].end();it++)
       config.pulse.channels.push_back(it->as<int>());
+
+  config.g2.tstart = (unsigned long long)(yaml_config["g2"]["start"].as<double>()*1e9);
+  config.g2.tend = (unsigned long long)(yaml_config["g2"]["end"].as<double>()*1e9);
+  config.g2.pulse_tstart = (unsigned long)(yaml_config["g2"]["pulse_start"].as<double>()*1e3);
+  config.g2.pulse_tend = (unsigned long)(yaml_config["g2"]["pulse_end"].as<double>()*1e3);
+  config.g2.channel_delay = (long)(yaml_config["g2"]["channel_delay"].as<double>()*1e3);
+  for(auto it = yaml_config["g2"]["channels"].begin();it!=yaml_config["g2"]["channels"].end();it++)
+      config.g2.channels.push_back(it->as<int>());
 }
+
+template void save_marray_l_to_h5<1>(boost::multi_array<long,1> const* const data, \
+                         std::string const filename,                   \
+                         std::string const datasetname,                \
+                            bool const append);
+
+template void save_marray_l_to_h5<2>(boost::multi_array<long,2> const* const data, \
+                         std::string const filename,                   \
+                         std::string const datasetname,                \
+                            bool const append);

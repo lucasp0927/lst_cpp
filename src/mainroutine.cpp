@@ -239,7 +239,7 @@ void bigtime(po::variables_map& vm, int const omp_thread_num, FILES& lst_files, 
       save_marray_d_to_h5(&big_time_result,h5_filename,"bigtime",false);
       delete [] output_array;
       plot_bigtime(big_time_result,lst_files,config,eps_filename);
-    }  
+    }
 }
 
 void pulse(po::variables_map& vm, int const omp_thread_num, FILES& lst_files, CONFIG& config)
@@ -312,6 +312,8 @@ void pulse(po::variables_map& vm, int const omp_thread_num, COMBINE_FILES& c_lst
       reader.read_additional_file(filename);
       reader.decode_counts(tstart, tend);
     }
+  //DEBUG
+  //reader.print_ch3_size();
   //TODO: Need to add channel delays.
   for (auto it=channels.begin();it!=channels.end();it++)
     {
@@ -330,4 +332,37 @@ void pulse(po::variables_map& vm, int const omp_thread_num, COMBINE_FILES& c_lst
     }
   save_marray_ull_to_h5(&pulse_result_timestamp,output_filename,"timestamp",false);
   save_marray_ull_to_h5(&pulse_result_count,output_filename,"count",true);
+}
+
+void g2(po::variables_map& vm, int const omp_thread_num, COMBINE_FILES& c_lst_files, CONFIG& config)
+{
+  unsigned int const file_num = c_lst_files.files.size();
+  std::string const output_filename = vm["combineoutput"].as<std::string>();
+  unsigned long long tstart = (unsigned long long)config.g2.tstart;
+  unsigned long long tend = (unsigned long long)config.g2.tend;
+  unsigned long pulse_tstart = (unsigned long)config.g2.pulse_tstart;
+  unsigned long pulse_tend = (unsigned long)config.g2.pulse_tend;
+  long channel_delay = (long)config.g2.channel_delay;
+  std::vector<int> const channels = config.g2.channels;
+  std::vector<long> result;
+  LstReader reader(c_lst_files.files[0]);
+  reader.decode_counts(tstart, tend);
+  for (int i = 1; i<file_num; i++)
+    {
+      std::string const filename = c_lst_files.files[i];
+      reader.read_additional_file(filename);
+      reader.decode_counts(tstart, tend);
+    }
+  reader.g2_photon_statistic(channels,tstart,tend,pulse_tstart,pulse_tend,result,3,channel_delay,omp_thread_num);
+  //save file
+
+  typedef boost::multi_array<long, 1> array_type;
+  int data_size = result.size();
+  array_type g2_result(boost::extents[data_size]);
+  for (int j = 0; j<data_size; j++)
+    {
+      g2_result[j] = result[j];
+    }
+  save_marray_l_to_h5(&g2_result,output_filename,"timediff",false);
+
 }

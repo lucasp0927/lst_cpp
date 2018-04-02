@@ -11,6 +11,7 @@ void LstReader::pulse_hist(unsigned int const channel, \
                            int const thread_num) const
 {
   assert(tend > tstart);
+  assert(pulse_tend > pulse_tstart);
   //result.resize();
   std::vector<std::vector<Count>> clock(sw_preset);
   std::vector<std::vector<Count>> data(sw_preset);
@@ -33,7 +34,7 @@ void LstReader::pulse_hist(unsigned int const channel, \
   select_channel(clock_tot,select_td, clock_ch);
   std::vector<Count> data_tot;
   select_channel(data_tot,select_td, channel);
-
+  std::cout<< "total data count: "<< data_tot.size()<<std::endl;
   //std::cout << "sort by sweep..." << std::endl;
 #pragma omp parallel sections
   {
@@ -72,6 +73,7 @@ void LstReader::pulse_hist(unsigned int const channel, \
     }
   }
 
+
 #pragma omp parallel for
   for (unsigned int sweep = 1; sweep <= sw_preset; ++sweep)
     {
@@ -79,23 +81,27 @@ void LstReader::pulse_hist(unsigned int const channel, \
       sort_by_time(clock[sweep-1]);
     }
   std::vector<std::vector<unsigned long>> delta_t(sw_preset);
-#pragma omp parallel for
+  //#pragma omp parallel for
   for (unsigned int sw = 0; sw < sw_preset; ++sw)
     {
       if (data[sw].size() == 0 || clock[sw].size() <2)
         continue; //TODO continue or break?
       //auto clock_it = clock[sw].begin();
       auto data_it = data[sw].begin();
-      for (auto clock_it = clock[sw].begin(); clock_it < clock[sw].end()-1; clock_it++)
+      int counter = 0;
+      for (auto clock_it = clock[sw].begin(); clock_it < clock[sw].end(); clock_it++)
         {
-          while (data_it->get_timedata() > (clock_it->get_timedata()+clock_delay) && data_it->get_timedata() < ((clock_it+1)->get_timedata()+clock_delay))
+          while (data_it->get_timedata() >= (clock_it->get_timedata()+clock_delay) && data_it->get_timedata() < ((clock_it+1)->get_timedata()+clock_delay))
             {
+
               unsigned long long dt = (data_it->get_timedata()-(clock_it->get_timedata()+clock_delay));
               if (dt >= pulse_tstart && dt < pulse_tend)
                 {
                   assert((dt-pt)%RESOLUTION==0);
                   assert((dt-pt)/RESOLUTION<result_timestamp.size());
                   result_count[(dt-pt)/RESOLUTION]++;
+                  counter++;
+
                 }
               if (data_it == data[sw].end())
                 {
@@ -109,5 +115,6 @@ void LstReader::pulse_hist(unsigned int const channel, \
               break;
             }
         }
+      std::cout << counter << std::endl;
     }
 }

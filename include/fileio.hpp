@@ -54,9 +54,19 @@ struct CONFIG
     unsigned long pulse_tend;
     long clock_delay;
   };
+  struct G2
+  {
+    std::vector<int> channels; //2 channels
+    unsigned long long tstart;
+    unsigned long long tend;
+    unsigned long pulse_tstart;
+    unsigned long pulse_tend;
+    long channel_delay;
+  };
   BIGTIME bigtime;
   PHASE phase;
   PULSE pulse;
+  G2 g2;
 };
 
 std::string extract_file_name(std::string const & fullPath);
@@ -71,5 +81,10 @@ void save_marray_ull_to_h5(boost::multi_array<unsigned long long,2> const* const
                            std::string const filename,\
                            std::string const datasetname,\
                            bool const append);
+template <long unsigned int N>
+void save_marray_l_to_h5(boost::multi_array<long,N> const* const data, \
+                         std::string const filename,                   \
+                         std::string const datasetname,                \
+                         bool const append);
 void read_yaml_config(std::string const filename, CONFIG& config);
 #endif
