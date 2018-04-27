@@ -312,7 +312,7 @@ void pulse(po::variables_map& vm, int const omp_thread_num, COMBINE_FILES& c_lst
       reader.read_additional_file(filename);
       reader.decode_counts(tstart, tend);
     }
-  //reader.print_stat();
+  reader.print_stat();
   //TODO: Need to add channel delays.
   for (auto it=channels.begin();it!=channels.end();it++)
     {

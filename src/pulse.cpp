@@ -36,9 +36,9 @@ void LstReader::pulse_hist(unsigned int const channel, \
   select_channel(data_tot,select_td, channel);
   std::cout<< "total data count: "<< data_tot.size()<<std::endl;
   //std::cout << "sort by sweep..." << std::endl;
-  //#pragma omp parallel sections
+  #pragma omp parallel sections
   {
-    //#pragma omp section
+    #pragma omp section
     {
       sort_by_sweep(clock_tot);
       auto clock_tot_it = clock_tot.begin();
@@ -53,7 +53,7 @@ void LstReader::pulse_hist(unsigned int const channel, \
             }
         }
     }
-    //#pragma omp section
+    #pragma omp section
     {
       sort_by_sweep(data_tot);
       //std::cout << "Selecting sweeps..." << std::endl;
@@ -74,7 +74,7 @@ void LstReader::pulse_hist(unsigned int const channel, \
   }
 
 
-  //#pragma omp parallel for
+  #pragma omp parallel for
   for (unsigned int sweep = 1; sweep <= sw_preset; ++sweep)
     {
       sort_by_time(data[sweep-1]);

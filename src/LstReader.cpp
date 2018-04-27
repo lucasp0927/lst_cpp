@@ -402,13 +402,14 @@ void LstReader::print_stat()
   std::cout << "Sweep preset: " << sw_preset << std::endl;
   for (int ch=0; ch<CHANNEL_NUM; ch++)
     {
-      std::cout << "  channel: " << ch << std::endl;
+      std::cout << "  channel " << ch << ": ";
       int sw_count = 0;
       for (auto it = histogram[ch].begin(); it != histogram[ch].end(); it++)
 	{
-	  std::cout << sw_count << ": "<< *it << std::endl;
-	  sw_count++;
+	  if (*it > 0)
+	    sw_count++;
 	}
+      std::cout <<sw_count << " sweeps with data." << std::endl;
     }
   //check sweeps with glitched measurement
   /*
