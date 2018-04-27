@@ -1,9 +1,15 @@
 IDIR =../include
 UNAME_S := $(shell uname -s)
+OS := $(shell lsb_release -si)
 ifeq ($(UNAME_S),Linux)
 	CC=g++
 	CFLAGS= -std=c++11 -O3 -I$(IDIR) -I/usr/include -Wall -fopenmp -Wno-sign-compare
-	LIBS=  -lhdf5 -lhdf5_cpp -lm -lboost_program_options -lyaml-cpp -lboost_iostreams -lboost_filesystem -lboost_system
+	LIBS= -lhdf5 -lhdf5_cpp -lm -lboost_program_options -lyaml-cpp -lboost_iostreams -lboost_filesystem -lboost_system
+endif
+ifeq ($(OS),Ubuntu)
+	CC=h5c++
+	CFLAGS= -std=c++11 -O3 -I$(IDIR) -I/usr/include -I/usr/include/hdf5/serial/  -Wall -fopenmp -Wno-sign-compare
+	LIBS= -lhdf5_cpp  -lhdf5 -lm -lboost_program_options -lyaml-cpp -lboost_iostreams -lboost_filesystem -lboost_system
 endif
 ifeq ($(UNAME_S),Darwin)
 	CC=/usr/local/opt/llvm/bin/clang++
