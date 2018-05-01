@@ -14,7 +14,6 @@
 #include <numeric>
 #include <H5Cpp.h>
 #include "boost/multi_array.hpp"
-#include "boost/utility.hpp"
 #include <omp.h>
 #include <math.h>
 #ifdef max

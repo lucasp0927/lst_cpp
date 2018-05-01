@@ -48,7 +48,7 @@ void LstReader::pulse_hist(unsigned int const channel, \
           while (clock_tot_it->get_sweep()==sweep)
             {
               clock[sweep-1].push_back(*clock_tot_it);
-	      if ((clock_tot_it != clock_tot.end()) && (next(clock_tot_it) == clock_tot.end()))
+	      if ((clock_tot_it != clock_tot.end()) && (std::next(clock_tot_it) == clock_tot.end()))
 		goto end_clock_loop;
               clock_tot_it++;
             }
@@ -67,7 +67,7 @@ void LstReader::pulse_hist(unsigned int const channel, \
           while (data_tot_it->get_sweep()==sweep)
             {
               data[sweep-1].push_back(*data_tot_it);
-              if ((data_tot_it != data_tot.end()) && (next(data_tot_it) == data_tot.end()))
+              if ((data_tot_it != data_tot.end()) && (std::next(data_tot_it) == data_tot.end()))
                 goto end_data_loop;
               data_tot_it++;
             }
