@@ -38,20 +38,22 @@ void LstReader::pulse_hist(unsigned int const channel, \
   //std::cout << "sort by sweep..." << std::endl;
   #pragma omp parallel sections
   {
-    #pragma omp section
+  #pragma omp section
     {
       sort_by_sweep(clock_tot);
       auto clock_tot_it = clock_tot.begin();
       for (unsigned int sweep = 1; sweep <= sw_preset; ++sweep)
         {
+	  //std::cout<<sw_preset<<std::endl;
           while (clock_tot_it->get_sweep()==sweep)
             {
               clock[sweep-1].push_back(*clock_tot_it);
-              if (clock_tot_it == clock_tot.end())
-                break;
+	      if ((clock_tot_it != clock_tot.end()) && (next(clock_tot_it) == clock_tot.end()))
+		goto end_clock_loop;
               clock_tot_it++;
             }
         }
+    end_clock_loop:;
     }
     #pragma omp section
     {
@@ -65,11 +67,12 @@ void LstReader::pulse_hist(unsigned int const channel, \
           while (data_tot_it->get_sweep()==sweep)
             {
               data[sweep-1].push_back(*data_tot_it);
-              if (data_tot_it == data_tot.end())
-                break;
+              if ((data_tot_it != data_tot.end()) && (next(data_tot_it) == data_tot.end()))
+                goto end_data_loop;
               data_tot_it++;
             }
         }
+ end_data_loop:;
     }
   }
 
