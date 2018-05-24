@@ -53,3 +53,4 @@ remove_zero: $(REMOVE_ZERO_OBJ)
 
 clean:
 	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~
+
