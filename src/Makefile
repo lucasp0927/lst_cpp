@@ -3,16 +3,19 @@ UNAME_S := $(shell uname -s)
 OS := $(shell lsb_release -si)
 ifeq ($(UNAME_S),Linux)
 	CC=g++
+	CXX=g++
 	CFLAGS= -std=c++11 -O3 -I$(IDIR) -I/usr/include -Wall -fopenmp -Wno-sign-compare
 	LIBS= -lhdf5 -lhdf5_cpp -lm -lboost_program_options -lyaml-cpp -lboost_iostreams -lboost_filesystem -lboost_system
 endif
 ifeq ($(OS),Ubuntu)
-	CC=h5c++
+	CC=g++
+	CXX=h5c++
 	CFLAGS= -std=c++11 -O3 -I$(IDIR) -I/usr/include -I/usr/include/hdf5/serial/  -Wall -fopenmp -Wno-sign-compare
 	LIBS= -lhdf5_cpp  -lhdf5 -lm -lboost_program_options -lyaml-cpp -lboost_iostreams -lboost_filesystem -lboost_system
 endif
 ifeq ($(UNAME_S),Darwin)
 	CC=/usr/local/opt/llvm/bin/clang++
+	CXX=/usr/local/opt/llvm/bin/clang++
 	CFLAGS= -std=c++11 -O3 -I$(IDIR) -I/usr/include -Wall -fopenmp -I/usr/local/opt/llvm/include -I/usr/local/opt/llvm/include/c++/v1/
 	LIBS= -L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib -lhdf5 -lhdf5_cpp -lm -lboost_program_options -lyaml-cpp -lboost_iostreams -lboost_filesystem
 endif
@@ -38,13 +41,13 @@ $(ODIR)/%.o: %.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 read_lst: $(READ_LST_OBJ)
-	$(CC) -o $(BDIR)/$@ $^ $(CFLAGS) $(LIBS)
+	$(CXX) -o $(BDIR)/$@ $^ $(CFLAGS) $(LIBS)
 
 print_header: $(PRINT_HEADER_OBJ)
-	$(CC) -o $(BDIR)/$@ $^ $(CFLAGS) $(LIBS)
+	$(CXX) -o $(BDIR)/$@ $^ $(CFLAGS) $(LIBS)
 
 remove_zero: $(REMOVE_ZERO_OBJ)
-	$(CC) -o $(BDIR)/$@ $^ $(CFLAGS) $(LIBS)
+	$(CXX) -o $(BDIR)/$@ $^ $(CFLAGS) $(LIBS)
 
 .PHONY: clean
 
