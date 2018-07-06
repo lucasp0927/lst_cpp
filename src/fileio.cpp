@@ -196,6 +196,70 @@ void save_marray_ull_to_h5(boost::multi_array<unsigned long long,2> const* const
     }
 }
 
+void save_marray_ull_to_h5(boost::multi_array<unsigned long long,3> const* const data, \
+                         std::string const filename,\
+                         std::string const datasetname,\
+                         bool const append)
+{
+  const H5std_string FILE_NAME(filename);
+  const H5std_string DATASET_NAME(datasetname);
+  try{
+    std::cout << "writing file: " << filename << std::endl;
+    std::cout << "        dataset: /" << datasetname << std::endl;
+    Exception::dontPrint();
+    int const rank = data->num_dimensions();
+    auto const* const shape = data->shape();
+    H5File* file = nullptr;
+    if (append)
+      file = new H5File( FILE_NAME, H5F_ACC_RDWR );
+    else
+      file = new H5File( FILE_NAME, H5F_ACC_TRUNC );
+    /*
+     * Create property list for a dataset and set up fill values.
+     */
+    unsigned long long fillvalue = 0ULL;   /* Fill value for the dataset */
+    DSetCreatPropList plist;
+    plist.setFillValue(PredType::NATIVE_ULLONG, &fillvalue);
+    /*
+     * Create dataspace for the dataset in the file.
+     */
+    hsize_t* const fdim = new hsize_t[rank];
+    for (int i = 0; i < rank; ++i)
+      fdim[i] = (hsize_t) shape[i];
+    DataSpace fspace( rank, fdim );
+    /*
+     * Create dataset and write it into the file.
+     */
+    DataSet* dataset = new DataSet(file->createDataSet(DATASET_NAME,\
+                                                       PredType::NATIVE_ULLONG, fspace, plist));
+
+    /*
+     * Create dataspace for the first dataset.
+     */
+    DataSpace mspace1( rank, fdim );
+    dataset->write( data->data(), PredType::NATIVE_ULLONG, mspace1, fspace );
+    delete dataset;
+    delete file;
+    delete [] fdim;
+  }
+  catch( FileIException error )
+    {
+      error.printError();
+      exit(EXIT_FAILURE);
+    }
+  catch( DataSetIException error )
+    {
+      error.printError();
+      exit(EXIT_FAILURE);
+    }
+  catch( DataSpaceIException error )
+    {
+      error.printError();
+      exit(EXIT_FAILURE);
+    }
+}
+
+
 template <long unsigned int N>
 void save_marray_l_to_h5(boost::multi_array<long,N> const* const data, \
                          std::string const filename,                   \
@@ -274,6 +338,7 @@ void read_yaml_config(std::string const filename, CONFIG& config)
   //TODO: check config file format
   config.caption = yaml_config["caption"].as<std::string>();
   config.bigtime.normalize = yaml_config["bigtime"]["normalize"].as<bool>();
+  config.bigtime.cycle = yaml_config["bigtime"]["cycle"].as<bool>();  
   config.bigtime.normalize_tstart = yaml_config["bigtime"]["normalize_start"].as<unsigned long long>()*1e9;
   config.bigtime.normalize_tend = yaml_config["bigtime"]["normalize_end"].as<unsigned long long>()*1e9;
   config.bigtime.bin_num = yaml_config["bigtime"]["bin_num"].as<int>();

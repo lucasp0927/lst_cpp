@@ -1,4 +1,45 @@
 #include "LstReader.hpp"
+
+void LstReader::big_time_sweep(std::vector<int> const channels,   \
+			       unsigned int sweep,\
+			       unsigned long long const tstart,   \
+			       unsigned long long const tend,     \
+			       unsigned int const bin_num,		\
+			       unsigned long* const output_buffer) const
+{
+  //Can be optimize
+  for (unsigned int i = 0; i < bin_num; ++i)
+    output_buffer[i] = 0ULL;
+  unsigned long long const interval = tend-tstart;
+  unsigned long long const bin_size = interval/bin_num;
+  for (auto it=channels.begin();it!=channels.end();it++)
+    {
+      int channel = *it;
+      std::vector<Count> counts_temp;
+      select_channel(counts_temp, counts, channel);
+      std::vector<Count> counts_temp2;
+      select_sweep(counts_temp2, counts_temp, sweep);      
+      std::sort(counts_temp2.begin(), counts_temp2.end(), compare_timedata());
+      unsigned int bin_idx = 0;
+      for (auto it=counts_temp2.begin(); it < counts_temp2.end(); it++)
+        {
+          if (it->get_channel() == channel)
+            {
+              while (it->get_timedata() > tstart+(bin_idx+1)*bin_size &&\
+                     bin_idx < bin_num-1)
+                ++bin_idx;
+
+              if (it->get_timedata() >= tstart+bin_idx*bin_size &&\
+                  it->get_timedata() <  tstart+(bin_idx+1)*bin_size)
+                {
+                  ++output_buffer[bin_idx];
+                }
+            }
+        }
+    }
+}
+
+
 void LstReader::big_time(unsigned int const channel,\
                          unsigned long long const tstart,   \
                          unsigned long long const tend,     \

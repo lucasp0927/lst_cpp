@@ -29,6 +29,7 @@ struct CONFIG
   {
     std::vector<int> channels;
     bool normalize;
+    bool cycle;
     unsigned long long normalize_tstart; //in ps
     unsigned long long normalize_tend;
     int bin_num;
@@ -78,6 +79,11 @@ void save_marray_d_to_h5(boost::multi_array<double,2> const* const data, \
                            std::string const datasetname,\
                            bool const append);
 void save_marray_ull_to_h5(boost::multi_array<unsigned long long,2> const* const data, \
+                           std::string const filename,\
+                           std::string const datasetname,\
+                           bool const append);
+
+void save_marray_ull_to_h5(boost::multi_array<unsigned long long,3> const* const data, \
                            std::string const filename,\
                            std::string const datasetname,\
                            bool const append);

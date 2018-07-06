@@ -165,7 +165,61 @@ void bigtime(po::variables_map& vm, int const omp_thread_num, FILES& lst_files, 
   unsigned long long normalize_tend = (unsigned long long)config.bigtime.normalize_tend;
   std::vector<int> const channels = config.bigtime.channels;
   bool normalize = config.bigtime.normalize;
-  if (not normalize)
+  bool cycle = config.bigtime.cycle;  
+  if (cycle && (not normalize))
+    {
+      typedef boost::multi_array<unsigned long long, 3> array_type_3d;      
+      //      array_type big_time_result(boost::extents[bin_num][file_num]);
+      
+      //get sweep_num from the first file
+      std::string const filename = lst_files.files[0];
+      LstReader* r = new LstReader(filename);
+      r->decode_counts();
+      unsigned int sweep_num = r->get_sweep();
+      delete r;
+      
+      array_type_3d big_time_result_sweep(boost::extents[bin_num][file_num][sweep_num]);
+      unsigned long* const output_array = new unsigned long[bin_num];
+      
+      for (int i = 0; i<bin_num; i++)
+	for (int j = 0; j<file_num; j++)
+	  for (int s = 0; s<sweep_num; s++)
+	    big_time_result_sweep[i][j][s] = 0ULL;
+      for (int i = 0; i<lst_files.files.size(); i++)
+	{
+	  std::string const filename = lst_files.files[i];
+	  LstReader reader(filename);
+	  reader.decode_counts();
+	  for (int s = 0; s<sweep_num; s++)
+	    {
+	      reader.big_time_sweep(channels,s+1,tstart,tend,bin_num,output_array);
+	      for (int j = 0; j<bin_num; j++)
+		big_time_result_sweep[j][i][s] = output_array[j];
+	    }
+	}
+      //output
+      std::string postfix = vm["postfix"].as<std::string>();
+      std::string h5_filename = "";
+      std::string eps_filename = "";
+      if (postfix.empty())
+	{
+	  h5_filename = lst_files.path+lst_files.prefix+"_bigtime.h5";
+	  eps_filename = lst_files.path+lst_files.prefix+"_bigtime.eps";
+	}
+      else
+	{
+	  h5_filename = lst_files.path+lst_files.prefix+"_bigtime_"+postfix+".h5";
+	  eps_filename = lst_files.path+lst_files.prefix+"_bigtime_"+postfix+".eps";
+	}
+      save_marray_ull_to_h5(&big_time_result_sweep,h5_filename,"bigtime",false);
+      delete [] output_array;
+      //plot_bigtime(big_time_result,lst_files,config,eps_filename);      
+    }
+  else if (cycle && normalize)
+    {
+      std::cout << "cycle and normalize are both True! Not implemented yet.";
+    }
+  else if (not normalize)
     {
       typedef boost::multi_array<unsigned long long, 2> array_type;
       unsigned long* const output_array = new unsigned long[bin_num];
@@ -202,6 +256,7 @@ void bigtime(po::variables_map& vm, int const omp_thread_num, FILES& lst_files, 
     }
   else
     {
+      //normalized
       typedef boost::multi_array<double, 2> array_type;
       double* const output_array = new double[bin_num];
       array_type big_time_result(boost::extents[bin_num][file_num]);

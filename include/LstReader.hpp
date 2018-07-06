@@ -53,6 +53,9 @@ private:
 public:
   LstReader(std::string filename);
   virtual ~LstReader();
+  //get functions
+  unsigned int get_sweep(){return sw_preset;};
+  //////
   void prepare();
   void read_file();
   void print_header() const;
@@ -88,6 +91,12 @@ public:
                 unsigned long long const tend,\
                 unsigned int const bin_num,\
                 unsigned long* const output_buffer) const;
+  void big_time_sweep(std::vector<int> const channels,\
+		      unsigned int sweep,\
+		      unsigned long long const tstart,	\
+		      unsigned long long const tend,	\
+		      unsigned int const bin_num,		\
+		      unsigned long* const output_buffer) const;  
   void big_time_normalize(unsigned int const channel,\
                           unsigned long long const tstart,  \
                           unsigned long long const tend,    \
