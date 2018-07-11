@@ -118,17 +118,17 @@ void save_marray_d_to_h5(boost::multi_array<double,2> const* const data, \
   }
   catch( FileIException error )
     {
-      error.printError();
+      //      error.printError();
       exit(EXIT_FAILURE);
     }
   catch( DataSetIException error )
     {
-      error.printError();
+      //      error.printError();
       exit(EXIT_FAILURE);
     }
   catch( DataSpaceIException error )
     {
-      error.printError();
+      //      error.printError();
       exit(EXIT_FAILURE);
     }
 }
@@ -181,17 +181,17 @@ void save_marray_ull_to_h5(boost::multi_array<unsigned long long,2> const* const
   }
   catch( FileIException error )
     {
-      error.printError();
+      //      error.printError();
       exit(EXIT_FAILURE);
     }
   catch( DataSetIException error )
     {
-      error.printError();
+      //      error.printError();
       exit(EXIT_FAILURE);
     }
   catch( DataSpaceIException error )
     {
-      error.printError();
+      //      error.printError();
       exit(EXIT_FAILURE);
     }
 }
@@ -244,17 +244,17 @@ void save_marray_ull_to_h5(boost::multi_array<unsigned long long,3> const* const
   }
   catch( FileIException error )
     {
-      error.printError();
+      //      error.printError();
       exit(EXIT_FAILURE);
     }
   catch( DataSetIException error )
     {
-      error.printError();
+      //      error.printError();
       exit(EXIT_FAILURE);
     }
   catch( DataSpaceIException error )
     {
-      error.printError();
+      //      error.printError();
       exit(EXIT_FAILURE);
     }
 }
@@ -309,17 +309,17 @@ void save_marray_l_to_h5(boost::multi_array<long,N> const* const data, \
   }
   catch( FileIException error )
     {
-      error.printError();
+      //      error.printError();
       exit(EXIT_FAILURE);
     }
   catch( DataSetIException error )
     {
-      error.printError();
+      //      error.printError();
       exit(EXIT_FAILURE);
     }
   catch( DataSpaceIException error )
     {
-      error.printError();
+      //      error.printError();
       exit(EXIT_FAILURE);
     }
 }
@@ -338,7 +338,7 @@ void read_yaml_config(std::string const filename, CONFIG& config)
   //TODO: check config file format
   config.caption = yaml_config["caption"].as<std::string>();
   config.bigtime.normalize = yaml_config["bigtime"]["normalize"].as<bool>();
-  config.bigtime.cycle = yaml_config["bigtime"]["cycle"].as<bool>();  
+  config.bigtime.cycle = yaml_config["bigtime"]["cycle"].as<bool>();
   config.bigtime.normalize_tstart = yaml_config["bigtime"]["normalize_start"].as<unsigned long long>()*1e9;
   config.bigtime.normalize_tend = yaml_config["bigtime"]["normalize_end"].as<unsigned long long>()*1e9;
   config.bigtime.bin_num = yaml_config["bigtime"]["bin_num"].as<int>();

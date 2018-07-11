@@ -380,17 +380,17 @@ void LstReader::save_marray_ull_to_h5(boost::multi_array<unsigned long long,2> c
   }
   catch( FileIException error )
     {
-      error.printError();
+      //      error.printError();
       exit(EXIT_FAILURE);
     }
   catch( DataSetIException error )
     {
-      error.printError();
+      //      error.printError();
       exit(EXIT_FAILURE);
     }
   catch( DataSpaceIException error )
     {
-      error.printError();
+      //      error.printError();
       exit(EXIT_FAILURE);
     }
 }
