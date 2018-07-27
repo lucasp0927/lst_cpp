@@ -1,6 +1,8 @@
 IDIR =../include
 UNAME_S := $(shell uname -s)
-OS := $(shell lsb_release -si)
+ifeq ($(UNAME_S),Linux)
+    OS := $(shell lsb_release -si)
+endif
 ifeq ($(UNAME_S),Linux)
 	CC=g++
 	CXX=g++
@@ -53,4 +55,3 @@ remove_zero: $(REMOVE_ZERO_OBJ)
 
 clean:
 	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~
-
