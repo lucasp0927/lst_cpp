@@ -16,9 +16,9 @@ ifeq ($(OS),Ubuntu)
 	LIBS= -lhdf5_cpp  -lhdf5 -lm -lboost_program_options -lyaml-cpp -lboost_iostreams -lboost_filesystem -lboost_system
 endif
 ifeq ($(UNAME_S),Darwin)
-	CC=/usr/local/opt/llvm/bin/clang++
-	CXX=/usr/local/opt/llvm/bin/clang++
-	CFLAGS= -std=c++11 -O3 -I$(IDIR) -I/usr/include -Wall -fopenmp -I/usr/local/opt/llvm/include -I/usr/local/opt/llvm/include/c++/v1/
+    CC=/usr/local/opt/llvm/bin/clang++
+    CXX=/usr/local/opt/llvm/bin/clang++
+    CFLAGS= -std=c++11 -O3 -I$(IDIR)  -I/usr/local/opt/llvm/include/c++/v1/ -I/usr/local/opt/llvm/include  -Wall -fopenmp -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/10.0.0/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/usr/include
 	LIBS= -L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib -lhdf5 -lhdf5_cpp -lm -lboost_program_options -lyaml-cpp -lboost_iostreams -lboost_filesystem
 endif
 
