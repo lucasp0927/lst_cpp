@@ -92,16 +92,19 @@ unsigned long LstReader::phase_hist(unsigned int const channel,  \
       if (data[sw].size() == 0 || clock[sw].size() <2)
         continue; //TODO continue or break?
       auto clock_it = clock[sw].begin();
-      while (data[sw][0].get_timedata() > (clock_it+1)->get_timedata() && (clock_it+1)!=clock[sw].end())
+      while (data[sw][0].get_timedata() > (clock_it+1)->get_timedata() && (clock_it+2)!=clock[sw].end())
         ++clock_it;
       for (auto it=data[sw].begin(); it < data[sw].end(); it++)
         {
+          while((clock_it + 1)->get_timedata() - clock_it->get_timedata() == 0ULL)
+            {
+              ++clock_it;
+              std::cout << "zero!!!!" << std::endl;
+              //dt = avg_period;
+            }
           unsigned long long dt = (it->get_timedata()-clock_it->get_timedata());
-  		if ((clock_it + 1)->get_timedata() - clock_it->get_timedata() == 0ULL)
-            dt = 0ULL;
-          else
-            dt = dt*avg_period/((clock_it+1)->get_timedata()-clock_it->get_timedata());
-  		if (dt < avg_period)
+          dt = dt*avg_period/((clock_it+1)->get_timedata()-clock_it->get_timedata());
+          if (dt < avg_period)
             delta_t.push_back((unsigned long)dt);
           while ((it+1)->get_timedata() >= (clock_it+1)->get_timedata())
             {

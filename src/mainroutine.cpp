@@ -119,34 +119,34 @@ void phase(po::variables_map& vm, int const omp_thread_num, FILES& lst_files, CO
       unsigned long* const output_array = new unsigned long[bin_num];
       array_type phase_result(boost::extents[bin_num][file_num]);
       for (int i = 0; i<bin_num; i++)
-	for (int j = 0; j<file_num; j++)
-	  phase_result[i][j] = 0;
+        for (int j = 0; j<file_num; j++)
+          phase_result[i][j] = 0;
       for (int i = 0; i<lst_files.files.size(); i++)
-	{
-	  std::string const filename = lst_files.files[i];
-	  LstReader reader(filename);
-	  reader.decode_counts();
-	  for (auto it=channels.begin();it!=channels.end();it++)
-	    {
-	      avg_period = reader.phase_hist(*it,tstart,tend,bin_num,output_array);
-	      for (int j = 0; j<bin_num; j++)
-		phase_result[j][i] += output_array[j]/channels.size();
-	    }
-	}
+        {
+          std::string const filename = lst_files.files[i];
+          LstReader reader(filename);
+          reader.decode_counts();
+          for (auto it=channels.begin();it!=channels.end();it++)
+            {
+              avg_period = reader.phase_hist(*it,tstart,tend,bin_num,output_array);
+              for (int j = 0; j<bin_num; j++)
+                phase_result[j][i] += output_array[j]/channels.size();
+            }
+        }
       //output
       std::string postfix = vm["postfix"].as<std::string>();
       std::string h5_filename = "";
       std::string eps_filename = "";
       if (postfix.empty())
-	{
-	  h5_filename = lst_files.path+lst_files.prefix+"_phase.h5";
-	  eps_filename = lst_files.path+lst_files.prefix+"_phase.eps";
-	}
+        {
+          h5_filename = lst_files.path+lst_files.prefix+"_phase.h5";
+          eps_filename = lst_files.path+lst_files.prefix+"_phase.eps";
+        }
       else
-	{
-	  h5_filename = lst_files.path+lst_files.prefix+"_phase_"+postfix+".h5";
-	  eps_filename = lst_files.path+lst_files.prefix+"_phase_"+postfix+".eps";
-	}
+        {
+          h5_filename = lst_files.path+lst_files.prefix+"_phase_"+postfix+".h5";
+          eps_filename = lst_files.path+lst_files.prefix+"_phase_"+postfix+".eps";
+        }
       //std::string const h5_filename = lst_files.path+lst_files.prefix+"_phase.h5";
       //std::string const eps_filename = lst_files.path+lst_files.prefix+"_phase.eps";
       save_marray_ull_to_h5(&phase_result,h5_filename,"phase",false);
@@ -165,22 +165,22 @@ void bigtime(po::variables_map& vm, int const omp_thread_num, FILES& lst_files, 
   unsigned long long normalize_tend = (unsigned long long)config.bigtime.normalize_tend;
   std::vector<int> const channels = config.bigtime.channels;
   bool normalize = config.bigtime.normalize;
-  bool cycle = config.bigtime.cycle;  
+  bool cycle = config.bigtime.cycle;
   if (cycle && (not normalize))
     {
-      typedef boost::multi_array<unsigned long long, 3> array_type_3d;      
+      typedef boost::multi_array<unsigned long long, 3> array_type_3d;
       //      array_type big_time_result(boost::extents[bin_num][file_num]);
-      
+
       //get sweep_num from the first file
       std::string const filename = lst_files.files[0];
       LstReader* r = new LstReader(filename);
       r->decode_counts();
       unsigned int sweep_num = r->get_sweep();
       delete r;
-      
+
       array_type_3d big_time_result_sweep(boost::extents[bin_num][file_num][sweep_num]);
       unsigned long* const output_array = new unsigned long[bin_num];
-      
+
       for (int i = 0; i<bin_num; i++)
 	for (int j = 0; j<file_num; j++)
 	  for (int s = 0; s<sweep_num; s++)
@@ -213,7 +213,7 @@ void bigtime(po::variables_map& vm, int const omp_thread_num, FILES& lst_files, 
 	}
       save_marray_ull_to_h5(&big_time_result_sweep,h5_filename,"bigtime",false);
       delete [] output_array;
-      //plot_bigtime(big_time_result,lst_files,config,eps_filename);      
+      //plot_bigtime(big_time_result,lst_files,config,eps_filename);
     }
   else if (cycle && normalize)
     {
