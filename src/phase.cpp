@@ -192,6 +192,7 @@ unsigned long LstReader::phase_hist_normalize(unsigned int const channel,  \
   select_channel(counts_ch, counts, channel);
   std::vector<Count> counts_ch_time;
   select_timedata(counts_ch_time, counts_ch, normalize_tstart,normalize_tend);
+  int fail_sweep_counter = 0; //TODO: probably doesnt work for parallel
   #pragma omp parallel for
   for (unsigned int sw = 0; sw < sw_preset; ++sw)
     {
@@ -204,42 +205,50 @@ unsigned long LstReader::phase_hist_normalize(unsigned int const channel,  \
       unsigned long long const norm_interval = normalize_tend - normalize_tstart;
       double const norm_count_rate = ((double)counts_ch_sw_time.size())/((double) norm_interval);
       double const norm_count = norm_count_rate*((double)(tend-tstart))/((double)bin_num);
-      assert(norm_count != 0);
-      //
-      if (data[sw].size() == 0 || clock[sw].size() <2)
-        continue; //TODO continue or break?
-      auto clock_it = clock[sw].begin();
-      while (data[sw][0].get_timedata() > (clock_it+1)->get_timedata() && (clock_it+1)!=clock[sw].end())
-        ++clock_it;
-      for (auto it=data[sw].begin(); it < data[sw].end()-1; it++) //go over all data
-        {
-          unsigned long long dt = (it->get_timedata()-clock_it->get_timedata());
-          if ((clock_it + 1)->get_timedata() - clock_it->get_timedata() == 0ULL)
-            dt = 0ULL;
-          else
-            dt = dt*avg_period/((clock_it+1)->get_timedata()-clock_it->get_timedata());
-          if (dt < avg_period)
-            delta_t[sw].push_back((unsigned long)dt);
-          while ((it+1)->get_timedata() >= (clock_it+1)->get_timedata())
-            {
-              ++clock_it;
-              if((clock_it+1) == clock[sw].end())
-                break;
-            }
-          if ((clock_it+1) == clock[sw].end())
-            break;
-        }
-      //make histogram
-      for (auto it=delta_t[sw].begin(); it < delta_t[sw].end(); it++)
-        {
-          unsigned int hist_bin = (unsigned int)*it/time_bin;
-          assert(hist_bin >=0);
-          assert(hist_bin < bin_num);
-          result_raw[hist_bin]++;
-        }
-      for (unsigned int i = 0; i < bin_num; ++i)
+      //assert(norm_count != 0);
+      if (norm_count == 0)
+	fail_sweep_counter++;
+      else
+      {
+	if (data[sw].size() == 0 || clock[sw].size() <2)
+	  continue; //TODO continue or break?
+	auto clock_it = clock[sw].begin();
+	while (data[sw][0].get_timedata() > (clock_it+1)->get_timedata() && (clock_it+1)!=clock[sw].end())
+	  ++clock_it;
+	for (auto it=data[sw].begin(); it < data[sw].end()-1; it++) //go over all data
+	  {
+	    unsigned long long dt = (it->get_timedata()-clock_it->get_timedata());
+	    if ((clock_it + 1)->get_timedata() - clock_it->get_timedata() == 0ULL)
+	      dt = 0ULL;
+	    else
+	      dt = dt*avg_period/((clock_it+1)->get_timedata()-clock_it->get_timedata());
+	    if (dt < avg_period)
+	      delta_t[sw].push_back((unsigned long)dt);
+	    while ((it+1)->get_timedata() >= (clock_it+1)->get_timedata())
+	      {
+		++clock_it;
+		if((clock_it+1) == clock[sw].end())
+		  break;
+	      }
+	    if ((clock_it+1) == clock[sw].end())
+	      break;
+	  }
+	//make histogram
+	for (auto it=delta_t[sw].begin(); it < delta_t[sw].end(); it++)
+	  {
+	    unsigned int hist_bin = (unsigned int)*it/time_bin;
+	    assert(hist_bin >=0);
+	    assert(hist_bin < bin_num);
+	    result_raw[hist_bin]++;
+	  }
+	for (unsigned int i = 0; i < bin_num; ++i)
           result[i] += ((double)result_raw[i])/norm_count/sw_preset;
-      delete [] result_raw;
+	delete [] result_raw;
+      }
     }
+  double fix_factor = double(sw_preset)/double(sw_preset-fail_sweep_counter);
+  std::cout << fix_factor << std::endl;
+  for (unsigned int i = 0; i < bin_num; ++i)
+    result[i] *= fix_factor;
   return avg_period;
 }
